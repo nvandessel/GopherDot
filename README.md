@@ -1,0 +1,132 @@
+# 🐹 GopherDot
+
+A powerful, cross-platform CLI tool for managing dotfiles with style.
+
+[![Go Version](https://img.shields.io/github/go-mod/go-version/nvandessel/gopherdot)](https://go.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## ✨ Features
+
+- 🔍 **Platform Detection** - Automatically detect OS, distro, and package manager
+- 📦 **Dependency Management** - Check for and install required tools
+- 🎨 **Interactive Setup** - Beautiful TUI with prompts and progress indicators
+- 🔧 **Machine-Specific Config** - Prompt for values that differ per machine
+- 🔗 **Stow Management** - Safely symlink configs with conflict detection
+- 🌐 **External Dependencies** - Clone plugin managers, themes, etc. from GitHub
+- 🏥 **Health Checking** - Doctor command to validate installation
+- 🌍 **Universal** - Works with ANY dotfiles repo with a `.gopherdot.yaml` config
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Clone your dotfiles repository
+git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+
+# Run the bootstrap script (installs GopherDot + runs setup)
+./install.sh
+```
+
+Or install GopherDot manually:
+
+```bash
+# Using Go
+go install github.com/nvandessel/gopherdot/cmd/gopherdot@latest
+
+# Or download from releases
+curl -fsSL https://raw.githubusercontent.com/nvandessel/gopherdot/main/scripts/install.sh | bash
+```
+
+### Usage
+
+```bash
+# Install dotfiles interactively
+gopherdot install
+
+# Initialize a new .gopherdot.yaml for your existing dotfiles
+gopherdot init
+
+# Check your dotfiles health
+gopherdot doctor
+
+# Update dotfiles and restow
+gopherdot update
+
+# List installed configs
+gopherdot list
+```
+
+## 📚 Documentation
+
+- [Installation Guide](docs/installation.md) - Coming soon
+- [Getting Started](docs/getting-started.md) - Coming soon
+- [Configuration Reference](docs/config-reference.md) - Coming soon
+- [Command Reference](docs/commands.md) - Coming soon
+- [Creating Your Own Dotfiles](docs/creating-dotfiles.md) - Coming soon
+
+## 🏗️ Development Status
+
+GopherDot is currently in active development. See [PLAN.md](PLAN.md) for the complete implementation roadmap.
+
+**Current Status:** Phase 0 - Project Setup ✅
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/nvandessel/gopherdot.git
+cd gopherdot
+
+# Build
+make build
+
+# Run
+./bin/gopherdot version
+
+# Run tests
+make test
+
+# Install locally
+make install
+```
+
+### Available Make Targets
+
+```bash
+make build         # Build for current platform
+make build-all     # Build for all platforms
+make test          # Run tests
+make test-coverage # Run tests with coverage report
+make install       # Install to GOPATH/bin
+make clean         # Remove build artifacts
+make fmt           # Format code
+make vet           # Run go vet
+make lint          # Run golangci-lint
+make help          # Show all targets
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by [chezmoi](https://www.chezmoi.io/), [yadm](https://yadm.io/), and [dotbot](https://github.com/anishathalye/dotbot)
+- Built with [Cobra](https://github.com/spf13/cobra), [Bubbletea](https://github.com/charmbracelet/bubbletea), [Huh](https://github.com/charmbracelet/huh), and [Lipgloss](https://github.com/charmbracelet/lipgloss)
+- Powered by [GNU Stow](https://www.gnu.org/software/stow/)
+
+## 📮 Contact
+
+- **Author:** Nic Van Dessel
+- **Repository:** [github.com/nvandessel/gopherdot](https://github.com/nvandessel/gopherdot)
+- **Issues:** [github.com/nvandessel/gopherdot/issues](https://github.com/nvandessel/gopherdot/issues)
+
+---
+
+**Made with ❤️ and Go**

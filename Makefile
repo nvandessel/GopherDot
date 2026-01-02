@@ -1,0 +1,118 @@
+# GopherDot Makefile
+
+# Version information
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+BUILD_TIME ?= $(shell date -u '+%Y-%m-%d_%H:%M:%S')
+GO_VERSION ?= $(shell go version | awk '{print $$3}')
+
+# Build settings
+BINARY_NAME = gopherdot
+BUILD_DIR = bin
+MAIN_PATH = ./cmd/gopherdot
+
+# Linker flags to inject version info
+LDFLAGS = -ldflags "-X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.GoVersion=$(GO_VERSION)"
+
+# Default target
+.PHONY: all
+all: build
+
+# Build the binary
+.PHONY: build
+build:
+	@echo "Building $(BINARY_NAME) $(VERSION)..."
+	@mkdir -p $(BUILD_DIR)
+	go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
+	@echo "Built: $(BUILD_DIR)/$(BINARY_NAME)"
+
+# Build for all platforms
+.PHONY: build-all
+build-all:
+	@echo "Building for all platforms..."
+	@mkdir -p $(BUILD_DIR)
+	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 $(MAIN_PATH)
+	GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 $(MAIN_PATH)
+	GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 $(MAIN_PATH)
+	GOOS=darwin GOARCH=arm64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 $(MAIN_PATH)
+	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe $(MAIN_PATH)
+	@echo "All binaries built in $(BUILD_DIR)/"
+
+# Run the application
+.PHONY: run
+run: build
+	./$(BUILD_DIR)/$(BINARY_NAME)
+
+# Run tests
+.PHONY: test
+test:
+	@echo "Running tests..."
+	go test -v -race -coverprofile=coverage.out ./...
+
+# Run tests with coverage report
+.PHONY: test-coverage
+test-coverage: test
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report: coverage.html"
+
+# Install the binary to GOPATH/bin
+.PHONY: install
+install:
+	@echo "Installing $(BINARY_NAME)..."
+	go install $(LDFLAGS) $(MAIN_PATH)
+
+# Clean build artifacts
+.PHONY: clean
+clean:
+	@echo "Cleaning..."
+	rm -rf $(BUILD_DIR)
+	rm -f coverage.out coverage.html
+	go clean
+
+# Format code
+.PHONY: fmt
+fmt:
+	@echo "Formatting code..."
+	go fmt ./...
+	gofmt -s -w .
+
+# Run linter
+.PHONY: lint
+lint:
+	@echo "Running linter..."
+	@command -v golangci-lint >/dev/null 2>&1 || { echo "golangci-lint not installed. Run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin"; exit 1; }
+	golangci-lint run ./...
+
+# Run go vet
+.PHONY: vet
+vet:
+	@echo "Running go vet..."
+	go vet ./...
+
+# Tidy dependencies
+.PHONY: tidy
+tidy:
+	@echo "Tidying dependencies..."
+	go mod tidy
+
+# Help target
+.PHONY: help
+help:
+	@echo "GopherDot Makefile targets:"
+	@echo ""
+	@echo "  build         - Build the binary for current platform"
+	@echo "  build-all     - Build binaries for all platforms"
+	@echo "  run           - Build and run the application"
+	@echo "  test          - Run tests with race detection"
+	@echo "  test-coverage - Run tests and generate coverage report"
+	@echo "  install       - Install binary to GOPATH/bin"
+	@echo "  clean         - Remove build artifacts"
+	@echo "  fmt           - Format code with go fmt"
+	@echo "  lint          - Run golangci-lint"
+	@echo "  vet           - Run go vet"
+	@echo "  tidy          - Tidy go.mod dependencies"
+	@echo "  help          - Show this help message"
+	@echo ""
+	@echo "Variables:"
+	@echo "  VERSION=$(VERSION)"
+	@echo "  BUILD_TIME=$(BUILD_TIME)"
+	@echo "  GO_VERSION=$(GO_VERSION)"
