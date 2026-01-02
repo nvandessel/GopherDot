@@ -1,0 +1,73 @@
+schema_version: "1.0"
+
+metadata:
+  name: minimal-dotfiles
+  author: Example User
+  repository: https://github.com/example/dotfiles
+  description: Minimal example dotfiles configuration
+  version: 1.0.0
+
+dependencies:
+  critical:
+    - git
+    - stow
+  
+  core:
+    - name: neovim
+      binary: nvim
+      package:
+        dnf: neovim
+        apt: neovim
+        brew: neovim
+        pacman: neovim
+
+configs:
+  core:
+    - name: git
+      path: git
+      description: Git configuration
+      platforms: [linux, darwin, windows]
+      requires_machine_config: true
+    
+    - name: zsh
+      path: zsh
+      description: ZSH shell configuration
+      platforms: [linux, darwin]
+      depends_on: [zsh]
+
+  optional:
+    - name: nvim
+      path: nvim
+      description: Neovim configuration
+      platforms: [linux, darwin, windows]
+      depends_on: [neovim]
+
+external:
+  - name: Pure Prompt
+    id: pure
+    url: https://github.com/sindresorhus/pure.git
+    destination: ~/.zsh/pure
+    method: clone
+
+machine_config:
+  - id: git
+    description: Git user configuration
+    destination: ~/.gitconfig.local
+    prompts:
+      - id: user_name
+        prompt: Full name for git commits
+        type: text
+        required: true
+      - id: user_email
+        prompt: Email for git commits
+        type: text
+        required: true
+    template: |
+      [user]
+          name = {{ .user_name }}
+          email = {{ .user_email }}
+
+post_install: |
+  Configuration complete! Next steps:
+  - Reload your shell: exec $SHELL
+  - Check everything with: gopherdot doctor
