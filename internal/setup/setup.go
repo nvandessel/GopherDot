@@ -3,11 +3,11 @@ package setup
 import (
 	"fmt"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/deps"
-	"github.com/nvandessel/gopherdot/internal/machine"
-	"github.com/nvandessel/gopherdot/internal/platform"
-	"github.com/nvandessel/gopherdot/internal/stow"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/deps"
+	"github.com/nvandessel/go4dot/internal/machine"
+	"github.com/nvandessel/go4dot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/stow"
 )
 
 // InstallOptions configures the installation behavior

@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nvandessel/gopherdot/internal/config"
+	"github.com/nvandessel/go4dot/internal/config"
 )
 
 // PromptResult holds the collected values from prompts

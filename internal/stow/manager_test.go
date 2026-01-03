@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/nvandessel/gopherdot/internal/config"
+	"github.com/nvandessel/go4dot/internal/config"
 )
 
 func TestIsStowInstalled(t *testing.T) {

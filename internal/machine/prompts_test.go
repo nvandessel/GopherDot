@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nvandessel/gopherdot/internal/config"
+	"github.com/nvandessel/go4dot/internal/config"
 )
 
 func TestCollectSinglePrompt(t *testing.T) {

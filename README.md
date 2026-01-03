@@ -1,8 +1,8 @@
-# 🐹 GopherDot
+# go4dot
 
 A powerful, cross-platform CLI tool for managing dotfiles with style.
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/nvandessel/gopherdot)](https://go.dev/)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/nvandessel/go4dot)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ✨ Features
@@ -25,37 +25,37 @@ A powerful, cross-platform CLI tool for managing dotfiles with style.
 git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 
-# Run the bootstrap script (installs GopherDot + runs setup)
+# Run the bootstrap script (installs go4dot + runs setup)
 ./install.sh
 ```
 
-Or install GopherDot manually:
+Or install go4dot manually:
 
 ```bash
 # Using Go
-go install github.com/nvandessel/gopherdot/cmd/gopherdot@latest
+go install github.com/nvandessel/go4dot/cmd/g4d@latest
 
 # Or download from releases
-curl -fsSL https://raw.githubusercontent.com/nvandessel/gopherdot/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/nvandessel/go4dot/main/scripts/install.sh | bash
 ```
 
 ### Usage
 
 ```bash
 # Install dotfiles interactively
-gopherdot install
+g4d install
 
 # Initialize a new .gopherdot.yaml for your existing dotfiles
-gopherdot init
+g4d init
 
 # Check your dotfiles health
-gopherdot doctor
+g4d doctor
 
 # Update dotfiles and restow
-gopherdot update
+g4d update
 
 # List installed configs
-gopherdot list
+g4d list
 ```
 
 ## 📚 Documentation
@@ -68,7 +68,7 @@ gopherdot list
 
 ## 🏗️ Development Status
 
-GopherDot is currently in active development. See [PLAN.md](PLAN.md) for the complete implementation roadmap.
+go4dot is currently in active development. See [PLAN.md](PLAN.md) for the complete implementation roadmap.
 
 **Current Status:** Phase 0 - Project Setup ✅
 
@@ -76,14 +76,14 @@ GopherDot is currently in active development. See [PLAN.md](PLAN.md) for the com
 
 ```bash
 # Clone the repository
-git clone https://github.com/nvandessel/gopherdot.git
-cd gopherdot
+git clone https://github.com/nvandessel/go4dot.git
+cd go4dot
 
 # Build
 make build
 
 # Run
-./bin/gopherdot version
+./bin/g4d version
 
 # Run tests
 make test
@@ -124,8 +124,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📮 Contact
 
 - **Author:** Nic Van Dessel
-- **Repository:** [github.com/nvandessel/gopherdot](https://github.com/nvandessel/gopherdot)
-- **Issues:** [github.com/nvandessel/gopherdot/issues](https://github.com/nvandessel/gopherdot/issues)
+- **Repository:** [github.com/nvandessel/go4dot](https://github.com/nvandessel/go4dot)
+- **Issues:** [github.com/nvandessel/go4dot/issues](https://github.com/nvandessel/go4dot/issues)
 
 ---
 

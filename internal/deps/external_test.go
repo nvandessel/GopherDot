@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/platform"
 )
 
 func TestExpandPath(t *testing.T) {

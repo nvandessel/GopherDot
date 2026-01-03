@@ -1,4 +1,4 @@
-module github.com/nvandessel/gopherdot
+module github.com/nvandessel/go4dot
 
 go 1.25.5
 

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/platform"
 )
 
 // ExternalResult represents the result of cloning external dependencies
@@ -399,7 +399,7 @@ func gitPull(path string) error {
 // This is useful for dependencies where you want to own the files
 func gitCloneThenCopy(url, dest string) error {
 	// Create a temp directory for cloning
-	tmpDir, err := os.MkdirTemp("", "gopherdot-clone-*")
+	tmpDir, err := os.MkdirTemp("", "go4dot-clone-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}

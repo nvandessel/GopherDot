@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nvandessel/gopherdot/internal/config"
+	"github.com/nvandessel/go4dot/internal/config"
 )
 
 // StowResult represents the result of a stow operation

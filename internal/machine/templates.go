@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/nvandessel/gopherdot/internal/config"
+	"github.com/nvandessel/go4dot/internal/config"
 )
 
 // RenderResult holds the result of rendering a template

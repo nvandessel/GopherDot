@@ -1,4 +1,4 @@
-# GopherDot Makefile
+# go4dot Makefile
 
 # Version information
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
@@ -6,9 +6,9 @@ BUILD_TIME ?= $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 GO_VERSION ?= $(shell go version | awk '{print $$3}')
 
 # Build settings
-BINARY_NAME = gopherdot
+BINARY_NAME = g4d
 BUILD_DIR = bin
-MAIN_PATH = ./cmd/gopherdot
+MAIN_PATH = ./cmd/g4d
 
 # Linker flags to inject version info
 LDFLAGS = -ldflags "-X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.GoVersion=$(GO_VERSION)"
@@ -97,7 +97,7 @@ tidy:
 # Help target
 .PHONY: help
 help:
-	@echo "GopherDot Makefile targets:"
+	@echo "go4dot Makefile targets:"
 	@echo ""
 	@echo "  build         - Build the binary for current platform"
 	@echo "  build-all     - Build binaries for all platforms"

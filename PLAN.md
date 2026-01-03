@@ -1,8 +1,8 @@
-# 🐹 GopherDot - Complete Implementation Plan
+# 🐹 go4dot - Complete Implementation Plan
 
 **Project:** A Go-based CLI tool for managing dotfiles across multiple machines with interactive setup, platform detection, and dependency management.
 
-**Repository:** `github.com/nvandessel/gopherdot`
+**Repository:** `github.com/nvandessel/go4dot`
 
 **Status:** 🚧 Under Active Development - **57% Complete (8/14 phases)**
 
@@ -24,24 +24,24 @@
 ### 🎯 What Works Now
 ```bash
 # Commands available:
-gopherdot install [path]                  # Full installation (main command!)
-gopherdot detect                          # Show platform info
-gopherdot config validate [path]          # Validate .gopherdot.yaml
-gopherdot config show [path]              # Display config
-gopherdot deps check [path]               # Check dependency status
-gopherdot deps install [path]             # Install missing deps
-gopherdot stow add <config> [path]        # Stow a config
-gopherdot stow remove <config> [path]     # Unstow a config
-gopherdot stow refresh [path]             # Refresh all configs
-gopherdot external status [path]          # Show external deps status
-gopherdot external clone [id] [path]      # Clone external deps
-gopherdot external update [id] [path]     # Update external deps
-gopherdot external remove <id> [path]     # Remove an external dep
-gopherdot machine info                    # Show system info (git, GPG, SSH)
-gopherdot machine status [path]           # Show machine config status
-gopherdot machine configure [id] [path]   # Configure machine settings
-gopherdot machine show <id> [path]        # Preview a machine config
-gopherdot machine remove <id> [path]      # Remove a machine config
+g4d install [path]                  # Full installation (main command!)
+g4d detect                          # Show platform info
+g4d config validate [path]          # Validate .gopherdot.yaml
+g4d config show [path]              # Display config
+g4d deps check [path]               # Check dependency status
+g4d deps install [path]             # Install missing deps
+g4d stow add <config> [path]        # Stow a config
+g4d stow remove <config> [path]     # Unstow a config
+g4d stow refresh [path]             # Refresh all configs
+g4d external status [path]          # Show external deps status
+g4d external clone [id] [path]      # Clone external deps
+g4d external update [id] [path]     # Update external deps
+g4d external remove <id> [path]     # Remove an external dep
+g4d machine info                    # Show system info (git, GPG, SSH)
+g4d machine status [path]           # Show machine config status
+g4d machine configure [id] [path]   # Configure machine settings
+g4d machine show <id> [path]        # Preview a machine config
+g4d machine remove <id> [path]      # Remove a machine config
 ```
 
 ### 📈 Project Stats
@@ -75,7 +75,7 @@ Health check command to validate installation and suggest fixes.
 
 ### What We're Building
 
-A **standalone CLI tool** (GopherDot) that manages dotfiles repositories with the following features:
+A **standalone CLI tool** (go4dot) that manages dotfiles repositories with the following features:
 
 - ✅ **Platform detection** - Automatically detect OS, distro, and package manager
 - ✅ **Dependency management** - Check for and install required tools
@@ -88,7 +88,7 @@ A **standalone CLI tool** (GopherDot) that manages dotfiles repositories with th
 
 ### Key Design Decisions
 
-- **Name:** GopherDot (playful, memorable, Go-themed)
+- **Name:** go4dot (playful, memorable, Go-themed)
 - **Two separate repos:** CLI tool + your dotfiles (keeps concerns separated)
 - **Zero-cost hosting:** GitHub Pages + GitHub Releases
 - **Versioning:** Semantic versioning (v1.0.0, v1.1.0, etc.)
@@ -98,34 +98,34 @@ A **standalone CLI tool** (GopherDot) that manages dotfiles repositories with th
 
 ### User Experience Flow
 
-**For you (or anyone using GopherDot):**
+**For you (or anyone using go4dot):**
 
 ```bash
 # Clone your dotfiles
 git clone https://github.com/nvandessel/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 
-# Run the bootstrap script (installs GopherDot + runs setup)
+# Run the bootstrap script (installs go4dot + runs setup)
 ./install.sh
 
 # Or manually:
 curl -fsSL https://raw.githubusercontent.com/nvandessel/gopherdot/main/install.sh | bash
-gopherdot install
+g4d install
 ```
 
-**For someone creating their own dotfiles with GopherDot:**
+**For someone creating their own dotfiles with go4dot:**
 
 ```bash
 cd ~/my-dotfiles
 
-# Initialize GopherDot config (scans your dotfiles, generates .gopherdot.yaml)
-gopherdot init
+# Initialize go4dot config (scans your dotfiles, generates .gopherdot.yaml)
+g4d init
 
 # Edit .gopherdot.yaml to customize
 vim .gopherdot.yaml
 
 # Run setup
-gopherdot install
+g4d install
 ```
 
 ---
@@ -136,7 +136,7 @@ gopherdot install
 
 ```
 ┌─────────────────────────────────────────────┐
-│  github.com/nvandessel/gopherdot           │  ← The CLI Tool
+│  github.com/nvandessel/go4dot           │  ← The CLI Tool
 │                                             │
 │  • Go binary that manages dotfiles         │
 │  • Distributed via GitHub Releases         │
@@ -149,7 +149,7 @@ gopherdot install
 │                                             │
 │  • Config files (git, nvim, tmux, etc.)    │
 │  • .gopherdot.yaml (manifest)              │
-│  • install.sh (bootstraps GopherDot)       │
+│  • install.sh (bootstraps go4dot)       │
 └─────────────────────────────────────────────┘
 ```
 
@@ -157,7 +157,7 @@ gopherdot install
 
 **Advantages:**
 
-- ✅ **Reusable** - Anyone can use GopherDot with their own dotfiles
+- ✅ **Reusable** - Anyone can use go4dot with their own dotfiles
 - ✅ **Versioned independently** - Release CLI tool separately from your dotfiles
 - ✅ **Cleaner** - Your dotfiles stay pure config files
 - ✅ **Community project** - Others can contribute to the tool
@@ -165,15 +165,15 @@ gopherdot install
 
 ### How They Integrate
 
-1. **GopherDot discovers dotfiles:**
+1. **go4dot discovers dotfiles:**
    - Checks current directory for `.gopherdot.yaml`
    - Checks `~/dotfiles`
    - Checks `~/.dotfiles`
    - Prompts if not found
 
-2. **GopherDot reads `.gopherdot.yaml`** from your dotfiles repo
+2. **go4dot reads `.gopherdot.yaml`** from your dotfiles repo
 
-3. **GopherDot manages everything:**
+3. **go4dot manages everything:**
    - Platform detection
    - Dependency installation
    - Machine-specific prompts
@@ -189,7 +189,7 @@ gopherdot install
 
 **Location:** Root of dotfiles repository
 
-**Purpose:** Declarative manifest that tells GopherDot:
+**Purpose:** Declarative manifest that tells go4dot:
 - What configs exist and where
 - What dependencies are needed
 - Platform compatibility
@@ -267,7 +267,7 @@ machine_config:
 ### 2. Command Structure
 
 ```
-gopherdot
+g4d
 ├── install         # Interactive setup (main command)
 ├── init            # Generate .gopherdot.yaml from existing dotfiles
 ├── doctor          # Health check and troubleshooting
@@ -346,7 +346,7 @@ See the full `.gopherdot.yaml` specification with detailed examples in [CONFIG_S
 
 ## Command Structure
 
-### `gopherdot install`
+### `g4d install`
 
 Interactive first-time setup.
 
@@ -365,7 +365,7 @@ Interactive first-time setup.
 - `--minimal` - Only core configs, no prompts
 - `--skip-deps` - Skip dependency installation
 
-### `gopherdot init`
+### `g4d init`
 
 Generate `.gopherdot.yaml` from existing dotfiles.
 
@@ -378,7 +378,7 @@ Generate `.gopherdot.yaml` from existing dotfiles.
 6. Generate `.gopherdot.yaml` with helpful comments
 7. Show next steps
 
-### `gopherdot doctor`
+### `g4d doctor`
 
 Health check and troubleshooting.
 
@@ -390,7 +390,7 @@ Health check and troubleshooting.
 - Font availability (optional)
 - Platform-specific checks
 
-### `gopherdot update`
+### `g4d update`
 
 Pull latest dotfiles and update.
 
@@ -403,7 +403,7 @@ Pull latest dotfiles and update.
 6. Update external deps
 7. Show migration notes if any
 
-### `gopherdot list`
+### `g4d list`
 
 Show installed configs.
 
@@ -413,7 +413,7 @@ Show installed configs.
 - Platform-specific (not available on this platform)
 - Archived configs
 
-### `gopherdot reconfigure`
+### `g4d reconfigure`
 
 Re-run machine-specific prompts.
 
@@ -421,7 +421,7 @@ Re-run machine-specific prompts.
 - Reconfigure everything
 - Reconfigure specific parts (git, paths, etc.)
 
-### `gopherdot stow`
+### `g4d stow`
 
 Manual stow operations.
 
@@ -431,7 +431,7 @@ Manual stow operations.
 - `refresh` - Restow all active configs
 - `list` - Show available configs
 
-### `gopherdot uninstall`
+### `g4d uninstall`
 
 Remove dotfiles.
 
@@ -442,7 +442,7 @@ Remove dotfiles.
 4. Optionally remove machine config
 5. Remove state file
 
-### `gopherdot version`
+### `g4d version`
 
 Show version information.
 
@@ -457,9 +457,9 @@ Show version information.
 ## Go Project Structure
 
 ```
-gopherdot/
+go4dot/
 ├── cmd/
-│   └── gopherdot/
+│   └── g4d/
 │       └── main.go                 # Entry point
 │
 ├── internal/                       # Private application code
@@ -513,7 +513,7 @@ gopherdot/
 │
 ├── docs/
 │   ├── README.md
-│   ├── installation.md            # How to install GopherDot
+│   ├── installation.md            # How to install go4dot
 │   ├── getting-started.md         # Quick start guide
 │   ├── config-reference.md        # .gopherdot.yaml specification
 │   ├── commands.md                # Command reference
@@ -572,7 +572,7 @@ gopherdot/
 - [x] Create project structure (directories)
 - [x] Create basic `main.go` with version command
 - [x] Create Makefile
-- [x] Test build: `make build && ./gopherdot version`
+- [x] Test build: `make build && ./g4d version`
 - [x] Create basic README.md
 - [x] Initialize git and make first commit
 
@@ -580,7 +580,7 @@ gopherdot/
 - Buildable Go project
 - Basic CLI with version command
 - Project structure in place
-- Can run `make build` and `./gopherdot version`
+- Can run `make build` and `./g4d version`
 
 **What you'll learn:**
 - Go module initialization
@@ -605,12 +605,12 @@ gopherdot/
 - [ ] Implement Linux distro detection (parse `/etc/os-release`)
 - [ ] Implement WSL detection (check `/proc/version`)
 - [ ] Implement package manager detection (check for binaries)
-- [ ] Add `gopherdot detect` command for testing
+- [ ] Add `g4d detect` command for testing
 - [ ] Write unit tests for detection logic
 
 **Deliverables:**
 - Platform detection working on Linux/macOS/WSL
-- `gopherdot detect` command shows platform info
+- `g4d detect` command shows platform info
 - Unit tests passing
 
 **What you'll learn:**
@@ -661,14 +661,14 @@ gopherdot/
 - [ ] Create config structs in `internal/config/schema.go`
 - [ ] Implement YAML loading in `internal/config/loader.go`
 - [ ] Implement validation in `internal/config/validator.go`
-- [ ] Add `gopherdot config validate` command
-- [ ] Add `gopherdot config show` command
+- [ ] Add `g4d config validate` command
+- [ ] Add `g4d config show` command
 - [ ] Write tests for loading and validation
 
 **Deliverables:**
 - Can load `.gopherdot.yaml` files
 - Validation working
-- `gopherdot config` commands
+- `g4d config` commands
 - Tests passing
 
 **What you'll learn:**
@@ -692,7 +692,7 @@ gopherdot/
 - [ ] Implement interactive installation flow
 - [ ] Add progress indicators
 - [ ] Handle installation failures gracefully
-- [ ] Add `gopherdot doctor --deps-only` command
+- [ ] Add `g4d doctor --deps-only` command
 - [ ] Write tests with mocked installs
 
 **Deliverables:**
@@ -727,7 +727,7 @@ gopherdot/
 **Deliverables:**
 - Can stow/unstow configs
 - Conflict detection working
-- Manual stow commands (`gopherdot stow add/remove`)
+- Manual stow commands (`g4d stow add/remove`)
 - Tests passing
 
 **What you'll learn:**
@@ -752,7 +752,7 @@ gopherdot/
 - [x] Implement conditional cloning
 - [x] Show progress during cloning
 - [x] Write tests with mocked git operations
-- [x] Add CLI commands (`gopherdot external status/clone/update/remove`)
+- [x] Add CLI commands (`g4d external status/clone/update/remove`)
 
 **Deliverables:**
 - Can clone external dependencies
@@ -786,7 +786,7 @@ gopherdot/
 - [x] Handle different prompt types (text, password, confirm)
 - [x] Implement Go template rendering
 - [x] Write tests for prompts and templates
-- [x] Add CLI commands (`gopherdot machine status/configure/show/remove/info`)
+- [x] Add CLI commands (`g4d machine status/configure/show/remove/info`)
 
 **Deliverables:**
 - Can prompt for machine-specific config
@@ -822,7 +822,7 @@ gopherdot/
 - [x] Write tests for setup package
 
 **Deliverables:**
-- Full `gopherdot install` command working
+- Full `g4d install` command working
 - Progress output with sections
 - Error aggregation and summary
 - Flexible skip options
@@ -852,7 +852,7 @@ gopherdot/
 - [ ] Write tests for checks
 
 **Deliverables:**
-- `gopherdot doctor` command working
+- `g4d doctor` command working
 - Beautiful health report
 - Helpful suggestions
 - Tests passing
@@ -873,10 +873,10 @@ gopherdot/
 
 **Tasks:**
 
-- [ ] Implement `gopherdot update`
-- [ ] Implement `gopherdot list`
-- [ ] Implement `gopherdot reconfigure`
-- [ ] Implement `gopherdot uninstall`
+- [ ] Implement `g4d update`
+- [ ] Implement `g4d list`
+- [ ] Implement `g4d reconfigure`
+- [ ] Implement `g4d uninstall`
 - [ ] Implement state management
 - [ ] Write tests for each command
 
@@ -909,7 +909,7 @@ gopherdot/
 - [ ] Write tests for init logic
 
 **Deliverables:**
-- `gopherdot init` command working
+- `g4d init` command working
 - Can detect common configs
 - Generated YAML is valid
 - Tests passing
@@ -924,7 +924,7 @@ gopherdot/
 
 ### Phase 12: Distribution & Release (3-4 hours)
 
-**Goal:** Make GopherDot easy to install.
+**Goal:** Make go4dot easy to install.
 
 **Status:** ⏳ PENDING
 
@@ -1036,7 +1036,7 @@ func TestDetectOS(t *testing.T) {
 // test/integration/install_test.go
 func TestInstallCommand(t *testing.T) {
     // Set up example dotfiles
-    // Run gopherdot install --auto
+    // Run g4d install --auto
     // Verify symlinks created
     // Verify state saved
 }
@@ -1160,7 +1160,7 @@ Since you're learning Go through this project, here are some helpful resources:
 ✅ Doctor command validates installation  
 ✅ Documentation is complete  
 ✅ Example dotfiles work  
-✅ `gopherdot init` generates valid config  
+✅ `g4d init` generates valid config  
 ✅ Tests pass (70%+ coverage)  
 ✅ Binaries available on GitHub Releases  
 ✅ Bootstrap script works  
@@ -1203,7 +1203,7 @@ Since you're learning Go through this project, here are some helpful resources:
 
 ### Answered
 
-- ✅ **Name:** GopherDot
+- ✅ **Name:** go4dot
 - ✅ **Separate repo:** Yes, for reusability
 - ✅ **License:** MIT
 - ✅ **Versioning:** Semantic versioning
@@ -1227,9 +1227,9 @@ Since you're learning Go through this project, here are some helpful resources:
 
 ### Project Links
 
-- **Repository:** https://github.com/nvandessel/gopherdot
-- **Issues:** https://github.com/nvandessel/gopherdot/issues
-- **Releases:** https://github.com/nvandessel/gopherdot/releases
+- **Repository:** https://github.com/nvandessel/go4dot
+- **Issues:** https://github.com/nvandessel/go4dot/issues
+- **Releases:** https://github.com/nvandessel/go4dot/releases
 
 ### Related Projects
 
@@ -1284,7 +1284,7 @@ Since you're learning Go through this project, here are some helpful resources:
     - Error aggregation (continues on non-fatal errors)
     - Flags: --auto, --minimal, --skip-deps, --skip-external, --skip-machine, --skip-stow
     - Post-install message support
-    - CLI command: `gopherdot install [path]`
+    - CLI command: `g4d install [path]`
   - **Progress**: 57% complete (8/14 phases), 94 tests passing, ~7,200 lines of code
 
 ---

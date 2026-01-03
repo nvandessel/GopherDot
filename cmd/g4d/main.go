@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/deps"
-	"github.com/nvandessel/gopherdot/internal/machine"
-	"github.com/nvandessel/gopherdot/internal/platform"
-	"github.com/nvandessel/gopherdot/internal/setup"
-	"github.com/nvandessel/gopherdot/internal/stow"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/deps"
+	"github.com/nvandessel/go4dot/internal/machine"
+	"github.com/nvandessel/go4dot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/setup"
+	"github.com/nvandessel/go4dot/internal/stow"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -23,9 +23,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "gopherdot",
-	Short: "GopherDot - A Go-based dotfiles manager",
-	Long: `GopherDot is a CLI tool for managing dotfiles across multiple machines.
+	Use:   "g4d",
+	Short: "go4dot - A Go-based dotfiles manager",
+	Long: `go4dot is a CLI tool for managing dotfiles across multiple machines.
 	
 It provides:
   • Platform detection (OS, distro, package manager)
@@ -36,15 +36,15 @@ It provides:
   • External dependency cloning (themes, plugins, etc.)
   • Health checking with doctor command
   
-GopherDot works with any dotfiles repository that has a .gopherdot.yaml config file.`,
+go4dot works with any dotfiles repository that has a .gopherdot.yaml config file.`,
 }
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display version information",
-	Long:  "Display GopherDot version, build time, and Go version",
+	Long:  "Display go4dot version, build time, and Go version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("GopherDot %s\n", Version)
+		fmt.Printf("go4dot %s\n", Version)
 		fmt.Printf("Built:      %s\n", BuildTime)
 		fmt.Printf("Go version: %s\n", GoVersion)
 	},
@@ -224,7 +224,7 @@ var depsCheckCmd = &cobra.Command{
 
 		// Exit with error if critical deps are missing
 		if len(result.GetMissingCritical()) > 0 {
-			fmt.Fprintf(os.Stderr, "\nError: Missing critical dependencies. Run 'gopherdot deps install' to install them.\n")
+			fmt.Fprintf(os.Stderr, "\nError: Missing critical dependencies. Run 'g4d deps install' to install them.\n")
 			os.Exit(1)
 		}
 	},
@@ -540,7 +540,7 @@ var externalStatusCmd = &cobra.Command{
 		fmt.Printf("\nSummary: %d installed, %d missing, %d skipped\n", installed, missing, skipped)
 
 		if missing > 0 {
-			fmt.Println("\nRun 'gopherdot external clone' to install missing dependencies.")
+			fmt.Println("\nRun 'g4d external clone' to install missing dependencies.")
 		}
 	},
 }
@@ -833,7 +833,7 @@ var machineStatusCmd = &cobra.Command{
 		fmt.Printf("\nSummary: %d configured, %d missing\n", configured, missing)
 
 		if missing > 0 {
-			fmt.Println("\nRun 'gopherdot machine configure' to set up missing configurations.")
+			fmt.Println("\nRun 'g4d machine configure' to set up missing configurations.")
 		}
 	},
 }
@@ -1141,7 +1141,7 @@ Use flags to customize the installation:
 
 		// Print header
 		fmt.Println("╔════════════════════════════════════════╗")
-		fmt.Println("║        GopherDot Installation          ║")
+		fmt.Println("║          go4dot Installation           ║")
 		fmt.Println("╚════════════════════════════════════════╝")
 		fmt.Printf("\nDotfiles: %s\n", dotfilesPath)
 		if cfg.Metadata.Name != "" {

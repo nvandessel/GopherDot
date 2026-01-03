@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/platform"
 )
 
 // DepStatus represents the status of a dependency

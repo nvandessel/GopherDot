@@ -3,8 +3,8 @@ package deps
 import (
 	"fmt"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/platform"
 )
 
 // InstallResult represents the result of installing dependencies

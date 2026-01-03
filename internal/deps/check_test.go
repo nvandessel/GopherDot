@@ -3,8 +3,8 @@ package deps
 import (
 	"testing"
 
-	"github.com/nvandessel/gopherdot/internal/config"
-	"github.com/nvandessel/gopherdot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/platform"
 )
 
 func TestCheck(t *testing.T) {
