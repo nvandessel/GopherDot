@@ -4,13 +4,13 @@
 
 **Repository:** `github.com/nvandessel/gopherdot`
 
-**Status:** 🚧 Under Active Development - **43% Complete (6/14 phases)**
+**Status:** 🚧 Under Active Development - **50% Complete (7/14 phases)**
 
 ---
 
 ## 📊 Current Status (2026-01-02)
 
-### ✅ Completed Phases (6/14)
+### ✅ Completed Phases (7/14)
 - **Phase 0**: Project Setup - Full Go project structure, dependencies, Makefile
 - **Phase 1**: Platform Detection - OS/distro/package manager detection
 - **Phase 2**: Package Managers - DNF, APT, Brew, Pacman, YUM implementations
@@ -18,6 +18,7 @@
 - **Phase 4**: Dependencies - Checking and installation of system packages
 - **Phase 5**: Stow Management - Symlink creation/removal with GNU stow
 - **Phase 6**: External Dependencies - Clone external repos with git, conditions, copy method
+- **Phase 7**: Machine Config - Interactive prompts, Go templates, GPG/SSH detection
 
 ### 🎯 What Works Now
 ```bash
@@ -34,16 +35,21 @@ gopherdot external status [path]          # Show external deps status
 gopherdot external clone [id] [path]      # Clone external deps
 gopherdot external update [id] [path]     # Update external deps
 gopherdot external remove <id> [path]     # Remove an external dep
+gopherdot machine info                    # Show system info (git, GPG, SSH)
+gopherdot machine status [path]           # Show machine config status
+gopherdot machine configure [id] [path]   # Configure machine settings
+gopherdot machine show <id> [path]        # Preview a machine config
+gopherdot machine remove <id> [path]      # Remove a machine config
 ```
 
 ### 📈 Project Stats
-- **Lines of Code**: ~5,200+
-- **Tests**: 55 passing (25-80% coverage per module)
-- **Commands**: 16 working commands
+- **Lines of Code**: ~6,500+
+- **Tests**: 87 passing (25-80% coverage per module)
+- **Commands**: 21 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 7: Machine-Specific Config
-Prompt for machine-specific values (git name, email, GPG keys) and generate config files.
+### ⏳ Next Up - Phase 8: Main Install Command
+Orchestrate the full installation flow with interactive config selection and beautiful TUI.
 
 ---
 
@@ -766,22 +772,27 @@ gopherdot/
 
 **Goal:** Prompt for machine-specific values and generate config files.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Create `internal/machine/prompts.go`
-- [ ] Create `internal/machine/templates.go`
-- [ ] Implement GPG key detection
-- [ ] Handle different prompt types
-- [ ] Implement template rendering
-- [ ] Write tests for prompts and templates
+- [x] Create `internal/machine/prompts.go`
+- [x] Create `internal/machine/templates.go`
+- [x] Create `internal/machine/git.go` for GPG/SSH/git detection
+- [x] Implement GPG key detection
+- [x] Implement SSH key detection
+- [x] Handle different prompt types (text, password, confirm)
+- [x] Implement Go template rendering
+- [x] Write tests for prompts and templates
+- [x] Add CLI commands (`gopherdot machine status/configure/show/remove/info`)
 
 **Deliverables:**
 - Can prompt for machine-specific config
 - Template rendering working
 - GPG key detection
-- Generated `~/.gitconfig.local`
+- SSH key detection
+- Git config detection (user.name, user.email, signingkey)
+- Generated config files from templates
 - Tests passing
 
 **What you'll learn:**
@@ -1253,6 +1264,16 @@ Since you're learning Go through this project, here are some helpful resources:
     - CLI commands: `external status/clone/update/remove`
     - Dry-run support for all operations
   - **Progress**: 43% complete (6/14 phases), 55 tests passing, ~5,200 lines of code
+- **2026-01-03**: Phase 7 completed
+  - **Phase 7**: ✅ Machine-specific configuration
+    - Interactive prompts for machine-specific values
+    - Go template rendering for config file generation
+    - GPG key detection (list keys, find by email)
+    - SSH key detection (ssh-agent keys)
+    - Git config detection (user.name, user.email, signingkey)
+    - System info gathering (username, hostname, etc.)
+    - CLI commands: `machine info/status/configure/show/remove`
+  - **Progress**: 50% complete (7/14 phases), 87 tests passing, ~6,500 lines of code
 
 ---
 
