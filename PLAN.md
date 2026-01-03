@@ -4,13 +4,13 @@
 
 **Repository:** `github.com/nvandessel/gopherdot`
 
-**Status:** 🚧 Under Active Development - **50% Complete (7/14 phases)**
+**Status:** 🚧 Under Active Development - **57% Complete (8/14 phases)**
 
 ---
 
 ## 📊 Current Status (2026-01-02)
 
-### ✅ Completed Phases (7/14)
+### ✅ Completed Phases (8/14)
 - **Phase 0**: Project Setup - Full Go project structure, dependencies, Makefile
 - **Phase 1**: Platform Detection - OS/distro/package manager detection
 - **Phase 2**: Package Managers - DNF, APT, Brew, Pacman, YUM implementations
@@ -19,10 +19,12 @@
 - **Phase 5**: Stow Management - Symlink creation/removal with GNU stow
 - **Phase 6**: External Dependencies - Clone external repos with git, conditions, copy method
 - **Phase 7**: Machine Config - Interactive prompts, Go templates, GPG/SSH detection
+- **Phase 8**: Install Command - Full orchestration with --auto, --minimal, --skip-* flags
 
 ### 🎯 What Works Now
 ```bash
 # Commands available:
+gopherdot install [path]                  # Full installation (main command!)
 gopherdot detect                          # Show platform info
 gopherdot config validate [path]          # Validate .gopherdot.yaml
 gopherdot config show [path]              # Display config
@@ -43,13 +45,13 @@ gopherdot machine remove <id> [path]      # Remove a machine config
 ```
 
 ### 📈 Project Stats
-- **Lines of Code**: ~6,500+
-- **Tests**: 87 passing (25-80% coverage per module)
-- **Commands**: 21 working commands
+- **Lines of Code**: ~7,200+
+- **Tests**: 94 passing (25-80% coverage per module)
+- **Commands**: 22 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 8: Main Install Command
-Orchestrate the full installation flow with interactive config selection and beautiful TUI.
+### ⏳ Next Up - Phase 9: Doctor Command
+Health check command to validate installation and suggest fixes.
 
 ---
 
@@ -807,23 +809,24 @@ gopherdot/
 
 **Goal:** Orchestrate the full installation flow.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Create `internal/setup/setup.go`
-- [ ] Implement full install orchestration
-- [ ] Add config selection UI
-- [ ] Implement beautiful progress UX
-- [ ] Handle errors gracefully
-- [ ] Add flags (--auto, --minimal, --skip-deps)
-- [ ] Write integration tests
+- [x] Create `internal/setup/setup.go`
+- [x] Implement full install orchestration
+- [x] Add progress indicators with sections
+- [x] Handle errors gracefully (continue on non-fatal errors)
+- [x] Add flags (--auto, --minimal, --skip-deps, --skip-external, --skip-machine, --skip-stow)
+- [x] Add install command to CLI
+- [x] Write tests for setup package
 
 **Deliverables:**
 - Full `gopherdot install` command working
-- Beautiful interactive UX
-- Error handling
-- Integration tests
+- Progress output with sections
+- Error aggregation and summary
+- Flexible skip options
+- Tests passing
 
 **What you'll learn:**
 - Orchestrating complex flows
@@ -1274,6 +1277,15 @@ Since you're learning Go through this project, here are some helpful resources:
     - System info gathering (username, hostname, etc.)
     - CLI commands: `machine info/status/configure/show/remove`
   - **Progress**: 50% complete (7/14 phases), 87 tests passing, ~6,500 lines of code
+- **2026-01-03**: Phase 8 completed
+  - **Phase 8**: ✅ Main install command
+    - Full installation orchestration
+    - Progress output with sections (deps, configs, external, machine)
+    - Error aggregation (continues on non-fatal errors)
+    - Flags: --auto, --minimal, --skip-deps, --skip-external, --skip-machine, --skip-stow
+    - Post-install message support
+    - CLI command: `gopherdot install [path]`
+  - **Progress**: 57% complete (8/14 phases), 94 tests passing, ~7,200 lines of code
 
 ---
 
