@@ -4,19 +4,20 @@
 
 **Repository:** `github.com/nvandessel/gopherdot`
 
-**Status:** 🚧 Under Active Development - **36% Complete (5/14 phases)**
+**Status:** 🚧 Under Active Development - **43% Complete (6/14 phases)**
 
 ---
 
 ## 📊 Current Status (2026-01-02)
 
-### ✅ Completed Phases (5/14)
+### ✅ Completed Phases (6/14)
 - **Phase 0**: Project Setup - Full Go project structure, dependencies, Makefile
-- **Phase 1**: Platform Detection - OS/distro/package manager detection  
+- **Phase 1**: Platform Detection - OS/distro/package manager detection
 - **Phase 2**: Package Managers - DNF, APT, Brew, Pacman, YUM implementations
 - **Phase 3**: Config Loading - YAML parsing, validation, discovery
 - **Phase 4**: Dependencies - Checking and installation of system packages
 - **Phase 5**: Stow Management - Symlink creation/removal with GNU stow
+- **Phase 6**: External Dependencies - Clone external repos with git, conditions, copy method
 
 ### 🎯 What Works Now
 ```bash
@@ -29,16 +30,20 @@ gopherdot deps install [path]             # Install missing deps
 gopherdot stow add <config> [path]        # Stow a config
 gopherdot stow remove <config> [path]     # Unstow a config
 gopherdot stow refresh [path]             # Refresh all configs
+gopherdot external status [path]          # Show external deps status
+gopherdot external clone [id] [path]      # Clone external deps
+gopherdot external update [id] [path]     # Update external deps
+gopherdot external remove <id> [path]     # Remove an external dep
 ```
 
 ### 📈 Project Stats
-- **Lines of Code**: ~4,500+
-- **Tests**: 39 passing (25-80% coverage per module)
-- **Commands**: 12 working commands
+- **Lines of Code**: ~5,200+
+- **Tests**: 55 passing (25-80% coverage per module)
+- **Commands**: 16 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 6: External Dependencies
-Clone external repos (plugin managers, themes, etc.) from GitHub.
+### ⏳ Next Up - Phase 7: Machine-Specific Config
+Prompt for machine-specific values (git name, email, GPG keys) and generate config files.
 
 ---
 
@@ -729,22 +734,25 @@ gopherdot/
 
 **Goal:** Clone external repos (Pure, TPM, NvChad).
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Create `internal/deps/external.go`
-- [ ] Implement git clone operations
-- [ ] Handle different clone methods (clone vs copy)
-- [ ] Implement conditional cloning
-- [ ] Show progress during cloning
-- [ ] Write tests with mocked git operations
+- [x] Create `internal/deps/external.go`
+- [x] Implement git clone operations
+- [x] Handle different clone methods (clone vs copy)
+- [x] Implement conditional cloning
+- [x] Show progress during cloning
+- [x] Write tests with mocked git operations
+- [x] Add CLI commands (`gopherdot external status/clone/update/remove`)
 
 **Deliverables:**
 - Can clone external dependencies
 - Copy method working (for NvChad)
 - Progress indicators
 - Tests passing
+- Platform-conditional cloning
+- Dry-run support
 
 **What you'll learn:**
 - Git operations from Go
@@ -1237,6 +1245,14 @@ Since you're learning Go through this project, here are some helpful resources:
   - **Phase 4**: ✅ Dependency checking and installation
   - **Phase 5**: ✅ Stow management (add, remove, refresh)
   - **Progress**: 36% complete (5/14 phases), 39 tests passing, ~4,500 lines of code
+- **2026-01-03**: Phase 6 completed
+  - **Phase 6**: ✅ External dependencies (clone, update, remove, status)
+    - Git clone operations with shallow clone (--depth 1)
+    - Clone vs copy methods (copy removes .git for owned files)
+    - Platform-conditional cloning (os, distro, wsl, architecture)
+    - CLI commands: `external status/clone/update/remove`
+    - Dry-run support for all operations
+  - **Progress**: 43% complete (6/14 phases), 55 tests passing, ~5,200 lines of code
 
 ---
 

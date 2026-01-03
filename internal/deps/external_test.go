@@ -1,0 +1,634 @@
+package deps
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/nvandessel/gopherdot/internal/config"
+	"github.com/nvandessel/gopherdot/internal/platform"
+)
+
+func TestExpandPath(t *testing.T) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("Failed to get home directory: %v", err)
+	}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Home directory expansion",
+			input:    "~/.config/test",
+			expected: filepath.Join(home, ".config/test"),
+		},
+		{
+			name:     "Absolute path unchanged",
+			input:    "/usr/local/bin",
+			expected: "/usr/local/bin",
+		},
+		{
+			name:     "Relative path cleaned",
+			input:    "./foo/../bar",
+			expected: "bar",
+		},
+		{
+			name:     "Home only",
+			input:    "~/",
+			expected: home,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := expandPath(tt.input)
+			if err != nil {
+				t.Fatalf("expandPath() error = %v", err)
+			}
+			if result != tt.expected {
+				t.Errorf("expandPath(%q) = %q, want %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestCheckCondition(t *testing.T) {
+	// Create test platform
+	linuxPlatform := &platform.Platform{
+		OS:             "linux",
+		Distro:         "fedora",
+		DistroVersion:  "43",
+		IsWSL:          false,
+		PackageManager: "dnf",
+		Architecture:   "amd64",
+	}
+
+	darwinPlatform := &platform.Platform{
+		OS:             "darwin",
+		Distro:         "",
+		DistroVersion:  "",
+		IsWSL:          false,
+		PackageManager: "brew",
+		Architecture:   "arm64",
+	}
+
+	wslPlatform := &platform.Platform{
+		OS:             "linux",
+		Distro:         "ubuntu",
+		DistroVersion:  "22.04",
+		IsWSL:          true,
+		PackageManager: "apt",
+		Architecture:   "amd64",
+	}
+
+	tests := []struct {
+		name      string
+		condition map[string]string
+		platform  *platform.Platform
+		want      bool
+	}{
+		{
+			name:      "No condition always matches",
+			condition: nil,
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "Empty condition always matches",
+			condition: map[string]string{},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "OS match",
+			condition: map[string]string{"os": "linux"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "OS no match",
+			condition: map[string]string{"os": "darwin"},
+			platform:  linuxPlatform,
+			want:      false,
+		},
+		{
+			name:      "Platform alias for OS",
+			condition: map[string]string{"platform": "linux"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "Distro match",
+			condition: map[string]string{"distro": "fedora"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "Distro no match",
+			condition: map[string]string{"distro": "ubuntu"},
+			platform:  linuxPlatform,
+			want:      false,
+		},
+		{
+			name:      "Package manager match",
+			condition: map[string]string{"package_manager": "dnf"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "WSL true match",
+			condition: map[string]string{"wsl": "true"},
+			platform:  wslPlatform,
+			want:      true,
+		},
+		{
+			name:      "WSL true no match",
+			condition: map[string]string{"wsl": "true"},
+			platform:  linuxPlatform,
+			want:      false,
+		},
+		{
+			name:      "WSL false match",
+			condition: map[string]string{"wsl": "false"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "Architecture match",
+			condition: map[string]string{"arch": "arm64"},
+			platform:  darwinPlatform,
+			want:      true,
+		},
+		{
+			name:      "Multiple OS comma separated",
+			condition: map[string]string{"os": "linux,darwin"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "Multiple conditions all match",
+			condition: map[string]string{"os": "linux", "distro": "fedora"},
+			platform:  linuxPlatform,
+			want:      true,
+		},
+		{
+			name:      "Multiple conditions one fails",
+			condition: map[string]string{"os": "linux", "distro": "ubuntu"},
+			platform:  linuxPlatform,
+			want:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := checkCondition(tt.condition, tt.platform)
+			if got != tt.want {
+				t.Errorf("checkCondition(%v) = %v, want %v", tt.condition, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatchesValue(t *testing.T) {
+	tests := []struct {
+		actual   string
+		expected string
+		want     bool
+	}{
+		{"linux", "linux", true},
+		{"linux", "darwin", false},
+		{"linux", "linux,darwin", true},
+		{"darwin", "linux,darwin", true},
+		{"windows", "linux,darwin", false},
+		{"linux", " linux , darwin ", true}, // with spaces
+	}
+
+	for _, tt := range tests {
+		got := matchesValue(tt.actual, tt.expected)
+		if got != tt.want {
+			t.Errorf("matchesValue(%q, %q) = %v, want %v", tt.actual, tt.expected, got, tt.want)
+		}
+	}
+}
+
+func TestCheckDestination(t *testing.T) {
+	// Create temp directories for testing
+	tmpDir := t.TempDir()
+
+	// Create a regular directory
+	regularDir := filepath.Join(tmpDir, "regular")
+	if err := os.MkdirAll(regularDir, 0755); err != nil {
+		t.Fatalf("Failed to create regular dir: %v", err)
+	}
+
+	// Create a git directory
+	gitDir := filepath.Join(tmpDir, "gitrepo")
+	if err := os.MkdirAll(filepath.Join(gitDir, ".git"), 0755); err != nil {
+		t.Fatalf("Failed to create git dir: %v", err)
+	}
+
+	// Create a file (not directory)
+	filePath := filepath.Join(tmpDir, "file.txt")
+	if err := os.WriteFile(filePath, []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to create file: %v", err)
+	}
+
+	tests := []struct {
+		name       string
+		path       string
+		wantExists bool
+		wantIsGit  bool
+	}{
+		{
+			name:       "Non-existent path",
+			path:       filepath.Join(tmpDir, "nonexistent"),
+			wantExists: false,
+			wantIsGit:  false,
+		},
+		{
+			name:       "Regular directory",
+			path:       regularDir,
+			wantExists: true,
+			wantIsGit:  false,
+		},
+		{
+			name:       "Git repository",
+			path:       gitDir,
+			wantExists: true,
+			wantIsGit:  true,
+		},
+		{
+			name:       "File (not directory)",
+			path:       filePath,
+			wantExists: true,
+			wantIsGit:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			exists, isGit := checkDestination(tt.path)
+			if exists != tt.wantExists {
+				t.Errorf("checkDestination(%q) exists = %v, want %v", tt.path, exists, tt.wantExists)
+			}
+			if isGit != tt.wantIsGit {
+				t.Errorf("checkDestination(%q) isGit = %v, want %v", tt.path, isGit, tt.wantIsGit)
+			}
+		})
+	}
+}
+
+func TestCheckExternalStatus(t *testing.T) {
+	// Create temp directory for testing
+	tmpDir := t.TempDir()
+
+	// Create an installed external dep (git repo)
+	installedPath := filepath.Join(tmpDir, "installed")
+	if err := os.MkdirAll(filepath.Join(installedPath, ".git"), 0755); err != nil {
+		t.Fatalf("Failed to create installed dir: %v", err)
+	}
+
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "installed",
+				Name:        "Installed Dep",
+				URL:         "https://github.com/example/repo.git",
+				Destination: installedPath,
+			},
+			{
+				ID:          "missing",
+				Name:        "Missing Dep",
+				URL:         "https://github.com/example/missing.git",
+				Destination: filepath.Join(tmpDir, "nonexistent"),
+			},
+			{
+				ID:          "skipped",
+				Name:        "Skipped Dep",
+				URL:         "https://github.com/example/skipped.git",
+				Destination: filepath.Join(tmpDir, "skipped"),
+				Condition:   map[string]string{"os": "windows"}, // Will not match
+			},
+		},
+	}
+
+	p := &platform.Platform{
+		OS:             "linux",
+		Distro:         "fedora",
+		PackageManager: "dnf",
+	}
+
+	statuses := CheckExternalStatus(cfg, p)
+
+	if len(statuses) != 3 {
+		t.Fatalf("len(statuses) = %d, want 3", len(statuses))
+	}
+
+	// Check installed status
+	var installedStatus, missingStatus, skippedStatus *ExternalStatus
+	for i := range statuses {
+		switch statuses[i].Dep.ID {
+		case "installed":
+			installedStatus = &statuses[i]
+		case "missing":
+			missingStatus = &statuses[i]
+		case "skipped":
+			skippedStatus = &statuses[i]
+		}
+	}
+
+	if installedStatus == nil || installedStatus.Status != "installed" {
+		t.Errorf("installed dep status = %v, want 'installed'", installedStatus)
+	}
+
+	if missingStatus == nil || missingStatus.Status != "missing" {
+		t.Errorf("missing dep status = %v, want 'missing'", missingStatus)
+	}
+
+	if skippedStatus == nil || skippedStatus.Status != "skipped" {
+		t.Errorf("skipped dep status = %v, want 'skipped'", skippedStatus)
+	}
+}
+
+func TestCloneExternalDryRun(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "test1",
+				Name:        "Test Repo 1",
+				URL:         "https://github.com/example/repo1.git",
+				Destination: filepath.Join(tmpDir, "repo1"),
+			},
+			{
+				ID:          "test2",
+				Name:        "Test Repo 2",
+				URL:         "https://github.com/example/repo2.git",
+				Destination: filepath.Join(tmpDir, "repo2"),
+				Condition:   map[string]string{"os": "windows"}, // Will be skipped
+			},
+		},
+	}
+
+	p := &platform.Platform{
+		OS:             "linux",
+		Distro:         "fedora",
+		PackageManager: "dnf",
+	}
+
+	var progressMessages []string
+	opts := ExternalOptions{
+		DryRun: true,
+		ProgressFunc: func(msg string) {
+			progressMessages = append(progressMessages, msg)
+		},
+	}
+
+	result, err := CloneExternal(cfg, p, opts)
+	if err != nil {
+		t.Fatalf("CloneExternal() error = %v", err)
+	}
+
+	// In dry run, nothing should actually be cloned
+	if len(result.Cloned) != 1 {
+		t.Errorf("len(Cloned) = %d, want 1", len(result.Cloned))
+	}
+
+	if len(result.Skipped) != 1 {
+		t.Errorf("len(Skipped) = %d, want 1", len(result.Skipped))
+	}
+
+	// Check that destination does not exist (dry run)
+	if _, err := os.Stat(filepath.Join(tmpDir, "repo1")); !os.IsNotExist(err) {
+		t.Error("repo1 should not exist after dry run")
+	}
+
+	// Check progress messages
+	if len(progressMessages) == 0 {
+		t.Error("Expected progress messages")
+	}
+}
+
+func TestCloneExternalSkipsExisting(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create an existing directory
+	existingPath := filepath.Join(tmpDir, "existing")
+	if err := os.MkdirAll(existingPath, 0755); err != nil {
+		t.Fatalf("Failed to create existing dir: %v", err)
+	}
+
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "existing",
+				Name:        "Existing Repo",
+				URL:         "https://github.com/example/existing.git",
+				Destination: existingPath,
+			},
+		},
+	}
+
+	p := &platform.Platform{
+		OS:             "linux",
+		Distro:         "fedora",
+		PackageManager: "dnf",
+	}
+
+	result, err := CloneExternal(cfg, p, ExternalOptions{})
+	if err != nil {
+		t.Fatalf("CloneExternal() error = %v", err)
+	}
+
+	if len(result.Skipped) != 1 {
+		t.Errorf("len(Skipped) = %d, want 1", len(result.Skipped))
+	}
+
+	if len(result.Cloned) != 0 {
+		t.Errorf("len(Cloned) = %d, want 0", len(result.Cloned))
+	}
+
+	if result.Skipped[0].Reason != "already exists" {
+		t.Errorf("Skipped reason = %q, want 'already exists'", result.Skipped[0].Reason)
+	}
+}
+
+func TestCloneSingleNotFound(t *testing.T) {
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "test",
+				Name:        "Test Repo",
+				URL:         "https://github.com/example/test.git",
+				Destination: "/tmp/test",
+			},
+		},
+	}
+
+	p := &platform.Platform{
+		OS: "linux",
+	}
+
+	err := CloneSingle(cfg, p, "nonexistent", ExternalOptions{})
+	if err == nil {
+		t.Error("Expected error for nonexistent ID")
+	}
+
+	if err.Error() != "external dependency 'nonexistent' not found" {
+		t.Errorf("Unexpected error message: %v", err)
+	}
+}
+
+func TestRemoveExternalNotFound(t *testing.T) {
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "test",
+				Name:        "Test Repo",
+				URL:         "https://github.com/example/test.git",
+				Destination: "/tmp/test",
+			},
+		},
+	}
+
+	err := RemoveExternal(cfg, "nonexistent", ExternalOptions{})
+	if err == nil {
+		t.Error("Expected error for nonexistent ID")
+	}
+}
+
+func TestRemoveExternalDryRun(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create a directory to remove
+	toRemove := filepath.Join(tmpDir, "toremove")
+	if err := os.MkdirAll(toRemove, 0755); err != nil {
+		t.Fatalf("Failed to create dir: %v", err)
+	}
+
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "toremove",
+				Name:        "To Remove",
+				URL:         "https://github.com/example/toremove.git",
+				Destination: toRemove,
+			},
+		},
+	}
+
+	var progressMessages []string
+	opts := ExternalOptions{
+		DryRun: true,
+		ProgressFunc: func(msg string) {
+			progressMessages = append(progressMessages, msg)
+		},
+	}
+
+	err := RemoveExternal(cfg, "toremove", opts)
+	if err != nil {
+		t.Fatalf("RemoveExternal() error = %v", err)
+	}
+
+	// Directory should still exist (dry run)
+	if _, err := os.Stat(toRemove); os.IsNotExist(err) {
+		t.Error("Directory should still exist after dry run")
+	}
+
+	if len(progressMessages) == 0 {
+		t.Error("Expected progress messages")
+	}
+}
+
+func TestRemoveExternal(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create a directory to remove
+	toRemove := filepath.Join(tmpDir, "toremove")
+	if err := os.MkdirAll(toRemove, 0755); err != nil {
+		t.Fatalf("Failed to create dir: %v", err)
+	}
+
+	cfg := &config.Config{
+		External: []config.ExternalDep{
+			{
+				ID:          "toremove",
+				Name:        "To Remove",
+				URL:         "https://github.com/example/toremove.git",
+				Destination: toRemove,
+			},
+		},
+	}
+
+	err := RemoveExternal(cfg, "toremove", ExternalOptions{})
+	if err != nil {
+		t.Fatalf("RemoveExternal() error = %v", err)
+	}
+
+	// Directory should be removed
+	if _, err := os.Stat(toRemove); !os.IsNotExist(err) {
+		t.Error("Directory should be removed")
+	}
+}
+
+func TestCopyDir(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create source directory with files
+	srcDir := filepath.Join(tmpDir, "src")
+	if err := os.MkdirAll(filepath.Join(srcDir, "subdir"), 0755); err != nil {
+		t.Fatalf("Failed to create src dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(srcDir, "file1.txt"), []byte("content1"), 0644); err != nil {
+		t.Fatalf("Failed to create file1: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(srcDir, "subdir", "file2.txt"), []byte("content2"), 0644); err != nil {
+		t.Fatalf("Failed to create file2: %v", err)
+	}
+
+	// Copy to destination
+	dstDir := filepath.Join(tmpDir, "dst")
+	if err := copyDir(srcDir, dstDir); err != nil {
+		t.Fatalf("copyDir() error = %v", err)
+	}
+
+	// Verify copied files
+	content1, err := os.ReadFile(filepath.Join(dstDir, "file1.txt"))
+	if err != nil {
+		t.Fatalf("Failed to read copied file1: %v", err)
+	}
+	if string(content1) != "content1" {
+		t.Errorf("file1 content = %q, want 'content1'", content1)
+	}
+
+	content2, err := os.ReadFile(filepath.Join(dstDir, "subdir", "file2.txt"))
+	if err != nil {
+		t.Fatalf("Failed to read copied file2: %v", err)
+	}
+	if string(content2) != "content2" {
+		t.Errorf("file2 content = %q, want 'content2'", content2)
+	}
+}
+
+func TestEmptyExternalConfig(t *testing.T) {
+	cfg := &config.Config{
+		External: []config.ExternalDep{},
+	}
+
+	p := &platform.Platform{
+		OS: "linux",
+	}
+
+	result, err := CloneExternal(cfg, p, ExternalOptions{})
+	if err != nil {
+		t.Fatalf("CloneExternal() error = %v", err)
+	}
+
+	if len(result.Cloned) != 0 || len(result.Failed) != 0 || len(result.Skipped) != 0 {
+		t.Error("Expected empty result for empty config")
+	}
+}
