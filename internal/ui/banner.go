@@ -1,19 +1,14 @@
 package ui
 
 import (
+	_ "embed"
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-var banner = `
-                  __ __    __      __ 
-   ____   ____   / // /___/ /___  / /_
-  / __ \ / __ \ / // // __  // __ \/ __/
- / /_/ // /_/ // // // /_/ // /_/ / /_  
- \__, / \____//_//_/ \__,_/ \____/\__/  
-/____/                                  
-`
+//go:embed banner.txt
+var banner string
 
 // PrintBanner prints the ASCII art banner
 func PrintBanner(version string) {
