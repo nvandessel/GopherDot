@@ -49,13 +49,14 @@ type Model struct {
 
 // keyMap defines the key bindings
 type keyMap struct {
-	Sync   key.Binding
-	Doctor key.Binding
-	Quit   key.Binding
-	Up     key.Binding
-	Down   key.Binding
-	Enter  key.Binding
-	Help   key.Binding
+	Sync    key.Binding
+	Doctor  key.Binding
+	Install key.Binding
+	Quit    key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Enter   key.Binding
+	Help    key.Binding
 }
 
 var keys = keyMap{
@@ -66,6 +67,10 @@ var keys = keyMap{
 	Doctor: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "doctor"),
+	),
+	Install: key.NewBinding(
+		key.WithKeys("i"),
+		key.WithHelp("i", "install"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
@@ -121,6 +126,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, keys.Doctor):
 			m.result = &Result{Action: ActionDoctor}
+			return m, tea.Quit
+
+		case key.Matches(msg, keys.Install):
+			m.result = &Result{Action: ActionInstall}
 			return m, tea.Quit
 
 		case key.Matches(msg, keys.Up):
@@ -309,6 +318,7 @@ func (m Model) renderActions() string {
 
 	actions := []string{
 		keyStyle.Render("[s]") + style.Render(" Sync All"),
+		keyStyle.Render("[i]") + style.Render(" Install"),
 		keyStyle.Render("[d]") + style.Render(" Doctor"),
 		keyStyle.Render("[enter]") + style.Render(" Sync Selected"),
 		keyStyle.Render("[q]") + style.Render(" Quit"),

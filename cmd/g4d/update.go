@@ -170,7 +170,8 @@ This command:
 				fmt.Fprintf(os.Stderr, "Warning: failed to detect platform: %v\n", err)
 			} else {
 				extOpts := deps.ExternalOptions{
-					Update: true,
+					Update:   true,
+					RepoRoot: dotfilesPath,
 					ProgressFunc: func(msg string) {
 						fmt.Println("  " + msg)
 					},

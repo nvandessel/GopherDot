@@ -75,7 +75,7 @@ func Install(cfg *config.Config, dotfilesPath string, opts InstallOptions) (*Ins
 
 	// Step 4: Clone external dependencies
 	if !opts.SkipExternal {
-		if err := cloneExternal(cfg, p, opts, result); err != nil {
+		if err := cloneExternal(cfg, dotfilesPath, p, opts, result); err != nil {
 			result.Errors = append(result.Errors, err)
 		}
 	} else {
@@ -180,7 +180,7 @@ func stowConfigs(cfg *config.Config, dotfilesPath string, opts InstallOptions, r
 }
 
 // cloneExternal clones external dependencies
-func cloneExternal(cfg *config.Config, p *platform.Platform, opts InstallOptions, result *InstallResult) error {
+func cloneExternal(cfg *config.Config, dotfilesPath string, p *platform.Platform, opts InstallOptions, result *InstallResult) error {
 	if len(cfg.External) == 0 {
 		return nil
 	}
@@ -189,6 +189,7 @@ func cloneExternal(cfg *config.Config, p *platform.Platform, opts InstallOptions
 	progress(opts, fmt.Sprintf("Cloning %d external dependencies...", len(cfg.External)))
 
 	extOpts := deps.ExternalOptions{
+		RepoRoot: dotfilesPath,
 		ProgressFunc: func(msg string) {
 			progress(opts, "  "+msg)
 		},

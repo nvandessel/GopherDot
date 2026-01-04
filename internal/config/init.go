@@ -160,6 +160,48 @@ func InitConfigWithIO(path string, in io.Reader, out io.Writer) error {
 		method = "clone"
 		strategy = "overwrite"
 
+		// Ask for URL first to auto-detect name
+		err = huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().
+					Title("Git Repository URL").
+					Description("Enter the full clone URL").
+					Placeholder("https://github.com/example/plugin").
+					Value(&url),
+			),
+		).WithInput(in).WithOutput(out).Run()
+
+		if err != nil {
+			return err
+		}
+
+		// Auto-detect name from URL
+		if url != "" {
+			cleanUrl := strings.TrimRight(url, "/")
+			cleanUrl = strings.TrimSuffix(cleanUrl, ".git")
+
+			parts := strings.Split(cleanUrl, "/")
+			if len(parts) >= 2 {
+				repo := parts[len(parts)-1]
+				owner := parts[len(parts)-2]
+
+				// Basic check to see if 'owner' is likely a user/org and not a domain or protocol
+				if !strings.Contains(owner, ".") && !strings.Contains(owner, ":") && owner != "" {
+					name = fmt.Sprintf("%s %s", owner, repo)
+				} else {
+					name = repo
+				}
+			} else if len(parts) > 0 {
+				name = parts[len(parts)-1]
+			}
+		}
+
+		// Generate default destination placeholder
+		defaultDest := "@repoRoot/plugins/" + slugify(name)
+		if name == "" {
+			defaultDest = "@repoRoot/plugins/my-plugin"
+		}
+
 		err = huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
@@ -167,13 +209,9 @@ func InitConfigWithIO(path string, in io.Reader, out io.Writer) error {
 					Placeholder("My Plugin").
 					Value(&name),
 				huh.NewInput().
-					Title("Git URL").
-					Placeholder("https://github.com/example/plugin").
-					Value(&url),
-				huh.NewInput().
 					Title("Destination").
 					Description("Use @repoRoot/path to clone inside dotfiles").
-					Placeholder("@repoRoot/plugins/my-plugin").
+					Placeholder(defaultDest).
 					Value(&dest),
 				huh.NewSelect[string]().
 					Title("Method").

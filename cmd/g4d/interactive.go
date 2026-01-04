@@ -143,6 +143,38 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 
 	case dashboard.ActionInit:
 		initCmd.Run(initCmd, nil)
+
+		// Check if config now exists and prompt for install
+		if newCfg, newConfigPath, err := config.LoadFromDiscovery(); err == nil {
+			var runInstall bool
+			form := huh.NewForm(
+				huh.NewGroup(
+					huh.NewConfirm().
+						Title("Would you like to run install now?").
+						Description("This will set up dependencies and clone external repos").
+						Affirmative("Yes, install").
+						Negative("No, skip").
+						Value(&runInstall),
+				),
+			)
+			if form.Run() == nil && runInstall {
+				// Check for conflicts before install
+				dotfilesPath := filepath.Dir(newConfigPath)
+				conflicts, err := stow.DetectConflicts(newCfg, dotfilesPath)
+				if err != nil {
+					ui.Error("Failed to check conflicts: %v", err)
+				} else if len(conflicts) > 0 {
+					// Resolve conflicts before proceeding
+					if !resolveConflicts(conflicts) {
+						fmt.Println("  Install cancelled.")
+						waitForEnter()
+						return false
+					}
+				}
+				installCmd.Run(installCmd, nil)
+			}
+		}
+
 		waitForEnter()
 
 	case dashboard.ActionSync:
@@ -172,6 +204,21 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 		waitForEnter()
 
 	case dashboard.ActionInstall:
+		if cfg != nil && configPath != "" {
+			// Check for conflicts before install
+			dotfilesPath := filepath.Dir(configPath)
+			conflicts, err := stow.DetectConflicts(cfg, dotfilesPath)
+			if err != nil {
+				ui.Error("Failed to check conflicts: %v", err)
+			} else if len(conflicts) > 0 {
+				// Resolve conflicts before proceeding
+				if !resolveConflicts(conflicts) {
+					fmt.Println("  Install cancelled.")
+					waitForEnter()
+					return false
+				}
+			}
+		}
 		installCmd.Run(installCmd, nil)
 		waitForEnter()
 	}

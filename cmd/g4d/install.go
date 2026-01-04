@@ -8,6 +8,7 @@ import (
 	"github.com/nvandessel/go4dot/internal/config"
 	"github.com/nvandessel/go4dot/internal/setup"
 	"github.com/nvandessel/go4dot/internal/state"
+	"github.com/nvandessel/go4dot/internal/stow"
 	"github.com/nvandessel/go4dot/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -191,6 +192,11 @@ func saveInstallState(cfg *config.Config, dotfilesPath string, result *setup.Ins
 	// Save machine configs
 	for _, mc := range result.MachineConfigs {
 		st.SetMachineConfig(mc.ID, mc.Destination, false, false)
+	}
+
+	// Update symlink counts so dashboard shows correct sync status
+	if err := stow.UpdateSymlinkCounts(cfg, dotfilesPath, st); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: failed to update symlink counts: %v\n", err)
 	}
 
 	// Save state
