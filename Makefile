@@ -94,6 +94,12 @@ tidy:
 	@echo "Tidying dependencies..."
 	go mod tidy
 
+# Create release artifacts
+.PHONY: release
+release:
+	@echo "Creating release artifacts..."
+	@./scripts/build.sh
+
 # Help target
 .PHONY: help
 help:
@@ -101,6 +107,7 @@ help:
 	@echo ""
 	@echo "  build         - Build the binary for current platform"
 	@echo "  build-all     - Build binaries for all platforms"
+	@echo "  release       - Build and package release artifacts"
 	@echo "  run           - Build and run the application"
 	@echo "  test          - Run tests with race detection"
 	@echo "  test-coverage - Run tests and generate coverage report"

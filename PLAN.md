@@ -59,8 +59,8 @@ g4d uninstall [-f] [path]           # Remove symlinks and state
 - **Commands**: 28 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 12: Distribution & Release
-Make go4dot easy to install (bootstrap script, cross-compile, GitHub Actions).
+### ⏳ Next Up - Phase 13: Documentation
+Comprehensive, helpful documentation (README, guides, examples).
 
 ---
 
@@ -935,16 +935,16 @@ go4dot/
 
 **Goal:** Make go4dot easy to install.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Create `scripts/install.sh` (bootstrap)
-- [ ] Create `scripts/build.sh` (cross-compile)
-- [ ] Set up GitHub Actions (release.yml)
-- [ ] Set up GitHub Actions (test.yml)
-- [ ] Test release process
-- [ ] Update Makefile with release target
+- [x] Create `scripts/install.sh` (bootstrap)
+- [x] Create `scripts/build.sh` (cross-compile)
+- [x] Set up GitHub Actions (release.yml)
+- [x] Set up GitHub Actions (test.yml)
+- [x] Test release process
+- [x] Update Makefile with release target
 
 **Deliverables:**
 - Bootstrap script working
@@ -1303,6 +1303,13 @@ Since you're learning Go through this project, here are some helpful resources:
     - Added unit tests for scanning and generation logic
     - CLI command: `g4d init [path]`
   - **Progress**: 78% complete (11/14 phases), 121 tests passing, ~9,800 lines of code
+- **2026-01-04**: Phase 12 completed
+  - **Phase 12**: ✅ Distribution & Release
+    - Added `scripts/build.sh` for multi-platform build and packaging
+    - Added `scripts/install.sh` for one-line installation (curl | bash)
+    - Set up GitHub Actions for CI testing (on PR) and releases (on tag)
+    - Updated Makefile with `release` target
+  - **Progress**: 85% complete (12/14 phases), 121 tests passing, ~9,900 lines of code
 
 ---
 
