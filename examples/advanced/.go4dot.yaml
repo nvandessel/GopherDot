@@ -1,0 +1,107 @@
+schema_version: "1.0"
+
+metadata:
+  name: advanced-dotfiles
+  author: Power User
+  repository: https://github.com/example/advanced-dotfiles
+  description: Full-featured dev environment with neovim, tmux, and zsh
+  version: 1.0.0
+
+dependencies:
+  critical:
+    - git
+    - stow
+  
+  core:
+    - zsh
+    - tmux
+    - name: neovim
+      binary: nvim
+      package:
+        dnf: neovim
+        apt: neovim
+        brew: neovim
+    - name: ripgrep
+      binary: rg
+      package:
+        dnf: ripgrep
+        apt: ripgrep
+        brew: ripgrep
+    - name: fd
+      binary: fd
+      package:
+        dnf: fd-find
+        apt: fd-find
+        brew: fd
+
+configs:
+  core:
+    - name: git
+      path: git
+      description: Git configuration
+      platforms: [linux, darwin]
+      requires_machine_config: true
+    
+    - name: tmux
+      path: tmux
+      description: Tmux configuration
+      platforms: [linux, darwin]
+      depends_on: [tmux]
+
+  optional:
+    - name: nvim
+      path: nvim
+      description: Neovim configuration (IDE-like)
+      platforms: [linux, darwin]
+      depends_on: [neovim, ripgrep, fd]
+
+external:
+  - name: Tmux Plugin Manager
+    id: tpm
+    url: https://github.com/tmux-plugins/tpm
+    destination: ~/.tmux/plugins/tpm
+    method: clone
+    condition:
+      os: linux
+
+  - name: LazyVim (Starter)
+    id: lazyvim
+    url: https://github.com/LazyVim/starter
+    destination: ~/.config/nvim
+    method: copy  # Copy files instead of keeping .git
+    condition:
+      os: linux
+      
+machine_config:
+  - id: git
+    description: Git user configuration
+    destination: ~/.gitconfig.local
+    prompts:
+      - id: user_name
+        prompt: Full name for git commits
+        type: text
+        required: true
+      - id: user_email
+        prompt: Email for git commits
+        type: text
+        required: true
+      - id: signing_key
+        prompt: GPG Signing Key ID (optional)
+        type: text
+        required: false
+    template: |
+      [user]
+          name = {{ .user_name }}
+          email = {{ .user_email }}
+          {{ if .signing_key }}signingkey = {{ .signing_key }}{{ end }}
+      {{ if .signing_key }}
+      [commit]
+          gpgsign = true
+      {{ end }}
+
+post_install: |
+  🚀 Setup Complete!
+  
+  Don't forget to:
+  1. Open tmux and press prefix + I to install plugins
+  2. Open nvim and let Lazy install plugins

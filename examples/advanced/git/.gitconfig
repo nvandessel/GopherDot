@@ -1,0 +1,21 @@
+[user]
+	name = My Name
+	email = my@email.com
+[include]
+	path = ~/.gitconfig.local
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	ci = commit
+[core]
+	editor = nvim
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	light = false
+	side-by-side = true
+[pull]
+	rebase = true
