@@ -184,9 +184,9 @@ func TestCheckCondition(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := checkCondition(tt.condition, tt.platform)
+			got := CheckCondition(tt.condition, tt.platform)
 			if got != tt.want {
-				t.Errorf("checkCondition(%v) = %v, want %v", tt.condition, got, tt.want)
+				t.Errorf("CheckCondition(%v) = %v, want %v", tt.condition, got, tt.want)
 			}
 		})
 	}

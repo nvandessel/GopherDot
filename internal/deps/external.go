@@ -53,7 +53,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 
 	for _, ext := range cfg.External {
 		// Check condition
-		if !checkCondition(ext.Condition, p) {
+		if !CheckCondition(ext.Condition, p) {
 			result.Skipped = append(result.Skipped, ExternalSkipped{
 				Dep:    ext,
 				Reason: "condition not met",
@@ -174,7 +174,7 @@ func CloneSingle(cfg *config.Config, p *platform.Platform, id string, opts Exter
 	}
 
 	// Check condition
-	if !checkCondition(found.Condition, p) {
+	if !CheckCondition(found.Condition, p) {
 		return fmt.Errorf("condition not met for '%s'", id)
 	}
 
@@ -239,7 +239,7 @@ func CheckExternalStatus(cfg *config.Config, p *platform.Platform) []ExternalSta
 		}
 
 		// Check condition
-		if !checkCondition(ext.Condition, p) {
+		if !CheckCondition(ext.Condition, p) {
 			status.Status = "skipped"
 			status.Reason = "condition not met"
 			statuses = append(statuses, status)
@@ -314,9 +314,9 @@ func checkDestination(path string) (exists bool, isGit bool) {
 	return true, false
 }
 
-// checkCondition evaluates if an external dependency should be cloned
-// based on platform conditions
-func checkCondition(condition map[string]string, p *platform.Platform) bool {
+// CheckCondition evaluates if an external dependency should be cloned
+// based on platform conditions. Exported for use by other packages.
+func CheckCondition(condition map[string]string, p *platform.Platform) bool {
 	if condition == nil || len(condition) == 0 {
 		return true // No condition means always clone
 	}

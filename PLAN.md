@@ -4,13 +4,13 @@
 
 **Repository:** `github.com/nvandessel/go4dot`
 
-**Status:** 🚧 Under Active Development - **64% Complete (9/14 phases)**
+**Status:** 🚧 Under Active Development - **71% Complete (10/14 phases)**
 
 ---
 
-## 📊 Current Status (2026-01-03)
+## 📊 Current Status (2026-01-04)
 
-### ✅ Completed Phases (9/14)
+### ✅ Completed Phases (10/14)
 - **Phase 0**: Project Setup - Full Go project structure, dependencies, Makefile
 - **Phase 1**: Platform Detection - OS/distro/package manager detection
 - **Phase 2**: Package Managers - DNF, APT, Brew, Pacman, YUM implementations
@@ -21,6 +21,7 @@
 - **Phase 7**: Machine Config - Interactive prompts, Go templates, GPG/SSH detection
 - **Phase 8**: Install Command - Full orchestration with --auto, --minimal, --skip-* flags
 - **Phase 9**: Doctor Command - Health checks, symlink validation, fix suggestions
+- **Phase 10**: Additional Commands - State management, list, update, reconfigure, uninstall
 
 ### 🎯 What Works Now
 ```bash
@@ -44,16 +45,20 @@ g4d machine configure [id] [path]   # Configure machine settings
 g4d machine show <id> [path]        # Preview a machine config
 g4d machine remove <id> [path]      # Remove a machine config
 g4d doctor [-v] [path]              # Health check with fix suggestions
+g4d list [-a] [path]                # List installed and available configs
+g4d update [--external] [path]      # Pull latest and restow
+g4d reconfigure [id] [path]         # Re-run machine config prompts
+g4d uninstall [-f] [path]           # Remove symlinks and state
 ```
 
 ### 📈 Project Stats
-- **Lines of Code**: ~7,800+
-- **Tests**: 111+ passing (25-80% coverage per module)
-- **Commands**: 23 working commands
+- **Lines of Code**: ~9,500+
+- **Tests**: 119+ passing (25-80% coverage per module)
+- **Commands**: 27 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 10: Additional Commands
-Update, list, reconfigure, and uninstall commands with state management.
+### ⏳ Next Up - Phase 11: Init Command
+Generate .go4dot.yaml from existing dotfiles by scanning and detecting configs.
 
 ---
 
@@ -871,16 +876,16 @@ go4dot/
 
 **Goal:** Update, list, reconfigure, uninstall commands.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Implement `g4d update`
-- [ ] Implement `g4d list`
-- [ ] Implement `g4d reconfigure`
-- [ ] Implement `g4d uninstall`
-- [ ] Implement state management
-- [ ] Write tests for each command
+- [x] Implement `g4d update`
+- [x] Implement `g4d list`
+- [x] Implement `g4d reconfigure`
+- [x] Implement `g4d uninstall`
+- [x] Implement state management
+- [x] Write tests for each command
 
 **Deliverables:**
 - All maintenance commands working
