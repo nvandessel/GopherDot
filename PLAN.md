@@ -4,13 +4,13 @@
 
 **Repository:** `github.com/nvandessel/go4dot`
 
-**Status:** 🚧 Under Active Development - **71% Complete (10/14 phases)**
+**Status:** 🚧 Under Active Development - **78% Complete (11/14 phases)**
 
 ---
 
 ## 📊 Current Status (2026-01-04)
 
-### ✅ Completed Phases (10/14)
+### ✅ Completed Phases (11/14)
 - **Phase 0**: Project Setup - Full Go project structure, dependencies, Makefile
 - **Phase 1**: Platform Detection - OS/distro/package manager detection
 - **Phase 2**: Package Managers - DNF, APT, Brew, Pacman, YUM implementations
@@ -22,11 +22,13 @@
 - **Phase 8**: Install Command - Full orchestration with --auto, --minimal, --skip-* flags
 - **Phase 9**: Doctor Command - Health checks, symlink validation, fix suggestions
 - **Phase 10**: Additional Commands - State management, list, update, reconfigure, uninstall
+- **Phase 11**: Init Command - Generate .go4dot.yaml from existing dotfiles
 
 ### 🎯 What Works Now
 ```bash
 # Commands available:
 g4d install [path]                  # Full installation (main command!)
+g4d init [path]                     # Initialize config from existing dotfiles
 g4d detect                          # Show platform info
 g4d config validate [path]          # Validate .go4dot.yaml
 g4d config show [path]              # Display config
@@ -52,13 +54,13 @@ g4d uninstall [-f] [path]           # Remove symlinks and state
 ```
 
 ### 📈 Project Stats
-- **Lines of Code**: ~9,500+
-- **Tests**: 119+ passing (25-80% coverage per module)
-- **Commands**: 27 working commands
+- **Lines of Code**: ~9,800+
+- **Tests**: 121+ passing (25-80% coverage per module)
+- **Commands**: 28 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 11: Init Command
-Generate .go4dot.yaml from existing dotfiles by scanning and detecting configs.
+### ⏳ Next Up - Phase 12: Distribution & Release
+Make go4dot easy to install (bootstrap script, cross-compile, GitHub Actions).
 
 ---
 
@@ -904,16 +906,16 @@ go4dot/
 
 **Goal:** Generate `.go4dot.yaml` from existing dotfiles.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Create `internal/config/init.go`
-- [ ] Implement directory scanning
-- [ ] Implement config type detection
-- [ ] Create interactive wizard
-- [ ] Generate YAML with comments
-- [ ] Write tests for init logic
+- [x] Create `internal/config/init.go`
+- [x] Implement directory scanning
+- [x] Implement config type detection
+- [x] Create interactive wizard
+- [x] Generate YAML with comments
+- [x] Write tests for init logic
 
 **Deliverables:**
 - `g4d init` command working
@@ -1293,6 +1295,14 @@ Since you're learning Go through this project, here are some helpful resources:
     - Post-install message support
     - CLI command: `g4d install [path]`
   - **Progress**: 57% complete (8/14 phases), 94 tests passing, ~7,200 lines of code
+- **2026-01-04**: Phase 11 completed
+  - **Phase 11**: ✅ Init command
+    - Implemented directory scanning to find config folders
+    - Created interactive wizard for metadata and config selection
+    - Generated well-formatted .go4dot.yaml with comments
+    - Added unit tests for scanning and generation logic
+    - CLI command: `g4d init [path]`
+  - **Progress**: 78% complete (11/14 phases), 121 tests passing, ~9,800 lines of code
 
 ---
 
