@@ -59,8 +59,8 @@ g4d uninstall [-f] [path]           # Remove symlinks and state
 - **Commands**: 28 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 13: Documentation
-Comprehensive, helpful documentation (README, guides, examples).
+### ⏳ Next Up - Phase 14: Polish & v1.0.0
+Final code cleanup, version checking, and v1.0.0 release.
 
 ---
 
@@ -964,18 +964,18 @@ go4dot/
 
 **Goal:** Comprehensive, helpful documentation.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Write main README.md
-- [ ] Write docs/installation.md
-- [ ] Write docs/getting-started.md
-- [ ] Write docs/config-reference.md
-- [ ] Write docs/commands.md
-- [ ] Write docs/creating-dotfiles.md
-- [ ] Create example dotfiles (minimal & advanced)
-- [ ] Add help text to all commands
+- [x] Write main README.md
+- [x] Write docs/installation.md
+- [x] Write docs/getting-started.md
+- [x] Write docs/config-reference.md
+- [x] Write docs/commands.md
+- [x] Write docs/creating-dotfiles.md
+- [x] Create example dotfiles (minimal & advanced)
+- [x] Add help text to all commands
 
 **Deliverables:**
 - Comprehensive documentation
@@ -1310,6 +1310,12 @@ Since you're learning Go through this project, here are some helpful resources:
     - Set up GitHub Actions for CI testing (on PR) and releases (on tag)
     - Updated Makefile with `release` target
   - **Progress**: 85% complete (12/14 phases), 121 tests passing, ~9,900 lines of code
+- **2026-01-04**: Phase 13 completed
+  - **Phase 13**: ✅ Documentation
+    - Created docs directory with full guides (install, getting started, config)
+    - Updated main README.md
+    - Created minimal and advanced example dotfiles
+  - **Progress**: 92% complete (13/14 phases), 121 tests passing, ~10,000+ lines of code
 
 ---
 
