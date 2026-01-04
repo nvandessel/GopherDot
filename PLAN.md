@@ -4,13 +4,13 @@
 
 **Repository:** `github.com/nvandessel/go4dot`
 
-**Status:** 🚧 Under Active Development - **57% Complete (8/14 phases)**
+**Status:** 🚧 Under Active Development - **64% Complete (9/14 phases)**
 
 ---
 
-## 📊 Current Status (2026-01-02)
+## 📊 Current Status (2026-01-03)
 
-### ✅ Completed Phases (8/14)
+### ✅ Completed Phases (9/14)
 - **Phase 0**: Project Setup - Full Go project structure, dependencies, Makefile
 - **Phase 1**: Platform Detection - OS/distro/package manager detection
 - **Phase 2**: Package Managers - DNF, APT, Brew, Pacman, YUM implementations
@@ -20,6 +20,7 @@
 - **Phase 6**: External Dependencies - Clone external repos with git, conditions, copy method
 - **Phase 7**: Machine Config - Interactive prompts, Go templates, GPG/SSH detection
 - **Phase 8**: Install Command - Full orchestration with --auto, --minimal, --skip-* flags
+- **Phase 9**: Doctor Command - Health checks, symlink validation, fix suggestions
 
 ### 🎯 What Works Now
 ```bash
@@ -42,16 +43,17 @@ g4d machine status [path]           # Show machine config status
 g4d machine configure [id] [path]   # Configure machine settings
 g4d machine show <id> [path]        # Preview a machine config
 g4d machine remove <id> [path]      # Remove a machine config
+g4d doctor [-v] [path]              # Health check with fix suggestions
 ```
 
 ### 📈 Project Stats
-- **Lines of Code**: ~7,200+
-- **Tests**: 94 passing (25-80% coverage per module)
-- **Commands**: 22 working commands
+- **Lines of Code**: ~7,800+
+- **Tests**: 111+ passing (25-80% coverage per module)
+- **Commands**: 23 working commands
 - **Platforms**: Linux (Fedora, Ubuntu, Arch), macOS, WSL
 
-### ⏳ Next Up - Phase 9: Doctor Command
-Health check command to validate installation and suggest fixes.
+### ⏳ Next Up - Phase 10: Additional Commands
+Update, list, reconfigure, and uninstall commands with state management.
 
 ---
 
@@ -840,16 +842,16 @@ go4dot/
 
 **Goal:** Health check and troubleshooting.
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETED
 
 **Tasks:**
 
-- [ ] Create `internal/doctor/check.go`
-- [ ] Create `internal/doctor/report.go`
-- [ ] Implement all health checks
-- [ ] Generate beautiful health report
-- [ ] Suggest fixes for common issues
-- [ ] Write tests for checks
+- [x] Create `internal/doctor/check.go`
+- [x] Create `internal/doctor/report.go`
+- [x] Implement all health checks
+- [x] Generate beautiful health report
+- [x] Suggest fixes for common issues
+- [x] Write tests for checks
 
 **Deliverables:**
 - `g4d doctor` command working

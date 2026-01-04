@@ -7,6 +7,7 @@ import (
 
 	"github.com/nvandessel/go4dot/internal/config"
 	"github.com/nvandessel/go4dot/internal/deps"
+	"github.com/nvandessel/go4dot/internal/doctor"
 	"github.com/nvandessel/go4dot/internal/machine"
 	"github.com/nvandessel/go4dot/internal/platform"
 	"github.com/nvandessel/go4dot/internal/setup"
@@ -1190,6 +1191,62 @@ Use flags to customize the installation:
 	},
 }
 
+// ── Doctor Command ──
+
+var doctorCmd = &cobra.Command{
+	Use:   "doctor",
+	Short: "Check health of dotfiles installation",
+	Long:  "Run health checks on your dotfiles installation and suggest fixes for issues",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Load config
+		var cfg *config.Config
+		var dotfilesPath string
+		var err error
+
+		if len(args) > 0 {
+			cfg, err = config.LoadFromPath(args[0])
+			dotfilesPath = filepath.Dir(args[0])
+		} else {
+			cfg, dotfilesPath, err = config.LoadFromDiscovery()
+			if dotfilesPath != "" {
+				dotfilesPath = filepath.Dir(dotfilesPath)
+			}
+		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+			os.Exit(1)
+		}
+
+		verbose, _ := cmd.Flags().GetBool("verbose")
+
+		opts := doctor.CheckOptions{
+			DotfilesPath: dotfilesPath,
+			ProgressFunc: func(msg string) {
+				fmt.Println(msg)
+			},
+		}
+
+		result, err := doctor.RunChecks(cfg, opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error running checks: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println()
+
+		if verbose {
+			fmt.Print(result.DetailedReport())
+		} else {
+			fmt.Print(result.Report())
+		}
+
+		// Exit with error code if unhealthy
+		if !result.IsHealthy() {
+			os.Exit(1)
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(detectCmd)
@@ -1198,6 +1255,7 @@ func init() {
 	rootCmd.AddCommand(stowCmd)
 	rootCmd.AddCommand(externalCmd)
 	rootCmd.AddCommand(machineCmd)
+	rootCmd.AddCommand(doctorCmd)
 	rootCmd.AddCommand(installCmd)
 
 	configCmd.AddCommand(configValidateCmd)
@@ -1224,6 +1282,9 @@ func init() {
 	// Flags for machine configure
 	machineConfigureCmd.Flags().Bool("defaults", false, "Use default values without prompting")
 	machineConfigureCmd.Flags().Bool("overwrite", false, "Overwrite existing configuration files")
+
+	// Flags for doctor
+	doctorCmd.Flags().BoolP("verbose", "v", false, "Show detailed output including individual items")
 
 	// Flags for install
 	installCmd.Flags().Bool("auto", false, "Non-interactive mode, use defaults")
