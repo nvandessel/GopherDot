@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.0] - 2026-01-04
 
 ### Added
 - **Interactive Dashboard**: Run `g4d` to see a menu of options.
