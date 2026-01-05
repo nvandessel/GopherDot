@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/nvandessel/go4dot/internal/config"
+	"github.com/nvandessel/go4dot/internal/machine"
 	"github.com/nvandessel/go4dot/internal/platform"
 	"github.com/nvandessel/go4dot/internal/state"
 	"github.com/nvandessel/go4dot/internal/stow"
@@ -84,8 +85,20 @@ func runInteractive(cmd *cobra.Command, args []string) {
 				hasBaseline = len(st.SymlinkCounts) > 0
 			}
 
+			machineStatus := machine.CheckMachineConfigStatus(cfg)
+
+			// Convert to dashboard type
+			var dashStatus []dashboard.MachineStatus
+			for _, s := range machineStatus {
+				dashStatus = append(dashStatus, dashboard.MachineStatus{
+					ID:          s.ID,
+					Description: s.Description,
+					Status:      s.Status,
+				})
+			}
+
 			allConfigs := cfg.GetAllConfigs()
-			result, err = dashboard.Run(p, driftSummary, allConfigs, dotfilesPath, updateMsg, hasBaseline)
+			result, err = dashboard.Run(p, driftSummary, dashStatus, allConfigs, dotfilesPath, updateMsg, hasBaseline)
 		}
 
 		if err != nil {
@@ -165,7 +178,7 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 					ui.Error("Failed to check conflicts: %v", err)
 				} else if len(conflicts) > 0 {
 					// Resolve conflicts before proceeding
-					if !resolveConflicts(conflicts) {
+					if !stow.ResolveConflicts(conflicts) {
 						fmt.Println("  Install cancelled.")
 						waitForEnter()
 						return false
@@ -184,7 +197,16 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 			if st == nil {
 				st = state.New()
 			}
-			runStowRefresh(dotfilesPath, cfg, st)
+			_, err := stow.SyncAll(dotfilesPath, cfg, st, true, stow.StowOptions{
+				ProgressFunc: func(msg string) {
+					fmt.Printf("  %s\n", msg)
+				},
+			})
+			if err != nil {
+				ui.Error("%v", err)
+			} else {
+				ui.Success("Sync complete")
+			}
 			waitForEnter()
 		}
 
@@ -195,12 +217,25 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 			if st == nil {
 				st = state.New()
 			}
-			runStowSingle(dotfilesPath, result.ConfigName, cfg, st)
+			err := stow.SyncSingle(dotfilesPath, result.ConfigName, cfg, st, stow.StowOptions{
+				ProgressFunc: func(msg string) {
+					fmt.Printf("  %s\n", msg)
+				},
+			})
+			if err != nil {
+				ui.Error("%v", err)
+			} else {
+				ui.Success("Sync complete")
+			}
 			waitForEnter()
 		}
 
 	case dashboard.ActionDoctor:
 		doctorCmd.Run(doctorCmd, nil)
+		waitForEnter()
+
+	case dashboard.ActionMachineConfig:
+		machine.RunInteractiveConfig(cfg)
 		waitForEnter()
 
 	case dashboard.ActionInstall:
@@ -212,7 +247,7 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 				ui.Error("Failed to check conflicts: %v", err)
 			} else if len(conflicts) > 0 {
 				// Resolve conflicts before proceeding
-				if !resolveConflicts(conflicts) {
+				if !stow.ResolveConflicts(conflicts) {
 					fmt.Println("  Install cancelled.")
 					waitForEnter()
 					return false
@@ -224,159 +259,6 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 	}
 
 	return false
-}
-
-// runStowRefresh restows all configs
-func runStowRefresh(dotfilesPath string, cfg *config.Config, st *state.State) {
-	fmt.Println("\n  Checking for conflicts...")
-
-	// Check for conflicts first
-	conflicts, err := stow.DetectConflicts(cfg, dotfilesPath)
-	if err != nil {
-		ui.Error("Failed to check conflicts: %v", err)
-		return
-	}
-
-	if len(conflicts) > 0 {
-		// Show conflicts and ask how to handle
-		if !resolveConflicts(conflicts) {
-			fmt.Println("  Sync cancelled.")
-			return
-		}
-	}
-
-	fmt.Println("  Syncing all configs...")
-
-	allConfigs := cfg.GetAllConfigs()
-	result := stow.RestowConfigs(dotfilesPath, allConfigs, stow.StowOptions{
-		ProgressFunc: func(msg string) {
-			fmt.Printf("  %s\n", msg)
-		},
-	})
-
-	// Update symlink counts in state
-	if st != nil {
-		stow.UpdateSymlinkCounts(cfg, dotfilesPath, st)
-	}
-
-	if len(result.Failed) > 0 {
-		ui.Error("Failed to sync %d config(s)", len(result.Failed))
-	} else {
-		ui.Success("Synced %d config(s)", len(result.Success))
-	}
-}
-
-// resolveConflicts prompts the user to handle conflicting files
-func resolveConflicts(conflicts []stow.ConflictFile) bool {
-	fmt.Printf("\n  Found %d conflicting file(s) that would be overwritten:\n\n", len(conflicts))
-
-	// Group by config
-	byConfig := make(map[string][]stow.ConflictFile)
-	for _, c := range conflicts {
-		byConfig[c.ConfigName] = append(byConfig[c.ConfigName], c)
-	}
-
-	for configName, files := range byConfig {
-		fmt.Printf("  %s:\n", configName)
-		for i, f := range files {
-			if i >= 5 {
-				fmt.Printf("    ... and %d more\n", len(files)-5)
-				break
-			}
-			// Show just the filename relative to home
-			home := os.Getenv("HOME")
-			relPath, _ := filepath.Rel(home, f.TargetPath)
-			fmt.Printf("    ~/%s\n", relPath)
-		}
-	}
-
-	fmt.Println()
-
-	var action string
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("How would you like to handle these conflicts?").
-				Options(
-					huh.NewOption("Backup existing files (rename to .g4d-backup)", "backup"),
-					huh.NewOption("Delete existing files (use dotfiles version)", "delete"),
-					huh.NewOption("Cancel sync", "cancel"),
-				).
-				Value(&action),
-		),
-	)
-
-	if err := form.Run(); err != nil {
-		return false
-	}
-
-	if action == "cancel" {
-		return false
-	}
-
-	// Process conflicts
-	for _, conflict := range conflicts {
-		var err error
-		if action == "backup" {
-			err = stow.BackupConflict(conflict)
-			if err == nil {
-				home := os.Getenv("HOME")
-				relPath, _ := filepath.Rel(home, conflict.TargetPath)
-				fmt.Printf("  Backed up ~/%s\n", relPath)
-			}
-		} else {
-			err = stow.RemoveConflict(conflict)
-			if err == nil {
-				home := os.Getenv("HOME")
-				relPath, _ := filepath.Rel(home, conflict.TargetPath)
-				fmt.Printf("  Removed ~/%s\n", relPath)
-			}
-		}
-
-		if err != nil {
-			ui.Error("Failed to handle %s: %v", conflict.TargetPath, err)
-			return false
-		}
-	}
-
-	fmt.Println()
-	return true
-}
-
-// runStowSingle restows a single config
-func runStowSingle(dotfilesPath string, configName string, cfg *config.Config, st *state.State) {
-	fmt.Printf("\n  Syncing %s...\n", configName)
-
-	// Find the config item
-	var configItem *config.ConfigItem
-	for _, c := range cfg.GetAllConfigs() {
-		if c.Name == configName {
-			configItem = &c
-			break
-		}
-	}
-
-	if configItem == nil {
-		ui.Error("Config '%s' not found", configName)
-		return
-	}
-
-	err := stow.Restow(dotfilesPath, configItem.Path, stow.StowOptions{
-		ProgressFunc: func(msg string) {
-			fmt.Printf("  %s\n", msg)
-		},
-	})
-
-	// Update symlink count for this config
-	if st != nil {
-		stow.UpdateSymlinkCounts(cfg, dotfilesPath, st)
-	}
-
-	if err != nil {
-		ui.Error("Failed to sync %s: %v", configName, err)
-	} else {
-		ui.Success("Synced %s", configName)
-	}
 }
 
 func waitForEnter() {

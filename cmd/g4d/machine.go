@@ -42,37 +42,7 @@ var machineStatusCmd = &cobra.Command{
 		}
 
 		statuses := machine.CheckMachineConfigStatus(cfg)
-
-		fmt.Println("Machine Configuration Status")
-		fmt.Println("----------------------------")
-
-		var configured, missing int
-		for _, s := range statuses {
-			var statusIcon string
-			var info string
-
-			switch s.Status {
-			case "configured":
-				statusIcon = "+"
-				info = s.Destination
-				configured++
-			case "missing":
-				statusIcon = "x"
-				info = "not configured"
-				missing++
-			case "error":
-				statusIcon = "!"
-				info = s.Error
-			}
-
-			fmt.Printf("  %s %s (%s)\n", statusIcon, s.Description, info)
-		}
-
-		fmt.Printf("\nSummary: %d configured, %d missing\n", configured, missing)
-
-		if missing > 0 {
-			fmt.Println("\nRun 'g4d machine configure' to set up missing configurations.")
-		}
+		machine.PrintStatus(statuses)
 	},
 }
 
@@ -271,48 +241,7 @@ var machineInfoCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("System Information")
-		fmt.Println("------------------")
-		fmt.Printf("Username:   %s\n", info.Username)
-		fmt.Printf("Hostname:   %s\n", info.Hostname)
-		fmt.Printf("Home:       %s\n", info.HomeDir)
-		fmt.Println()
-
-		fmt.Println("Git Configuration")
-		fmt.Println("-----------------")
-		if info.GitUserName != "" {
-			fmt.Printf("user.name:  %s\n", info.GitUserName)
-		} else {
-			fmt.Println("user.name:  (not configured)")
-		}
-		if info.GitEmail != "" {
-			fmt.Printf("user.email: %s\n", info.GitEmail)
-		} else {
-			fmt.Println("user.email: (not configured)")
-		}
-		fmt.Println()
-
-		fmt.Println("Security Keys")
-		fmt.Println("-------------")
-		if info.HasGPG {
-			fmt.Println("GPG:        + Keys available")
-			keys, _ := machine.DetectGPGKeys()
-			for _, key := range keys {
-				fmt.Printf("            - %s (%s)\n", key.Email, key.KeyID)
-			}
-		} else {
-			fmt.Println("GPG:        x No keys found")
-		}
-
-		if info.HasSSH {
-			fmt.Println("SSH:        + Keys loaded")
-			keys, _ := machine.DetectSSHKeys()
-			for _, key := range keys {
-				fmt.Printf("            - %s (%s)\n", key.Path, key.Type)
-			}
-		} else {
-			fmt.Println("SSH:        x No keys loaded in agent")
-		}
+		machine.PrintSystemInfo(info)
 	},
 }
 

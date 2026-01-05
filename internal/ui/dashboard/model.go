@@ -22,6 +22,7 @@ const (
 	ActionSyncConfig
 	ActionDoctor
 	ActionInstall
+	ActionMachineConfig
 	ActionInit
 	ActionQuit
 )
@@ -32,19 +33,27 @@ type Result struct {
 	ConfigName string // For ActionSyncConfig
 }
 
+// MachineStatus represents the status of a machine config for the dashboard
+type MachineStatus struct {
+	ID          string
+	Description string
+	Status      string // "configured", "missing", "error"
+}
+
 // Model is the Bubbletea model for the dashboard
 type Model struct {
-	width        int
-	height       int
-	platform     *platform.Platform
-	driftSummary *stow.DriftSummary
-	configs      []config.ConfigItem
-	dotfilesPath string
-	updateMsg    string
-	selectedIdx  int
-	result       *Result
-	quitting     bool
-	hasBaseline  bool // True if we have stored symlink counts (synced before)
+	width         int
+	height        int
+	platform      *platform.Platform
+	driftSummary  *stow.DriftSummary
+	machineStatus []MachineStatus
+	configs       []config.ConfigItem
+	dotfilesPath  string
+	updateMsg     string
+	selectedIdx   int
+	result        *Result
+	quitting      bool
+	hasBaseline   bool // True if we have stored symlink counts (synced before)
 }
 
 // keyMap defines the key bindings
@@ -52,6 +61,7 @@ type keyMap struct {
 	Sync    key.Binding
 	Doctor  key.Binding
 	Install key.Binding
+	Machine key.Binding
 	Quit    key.Binding
 	Up      key.Binding
 	Down    key.Binding
@@ -71,6 +81,10 @@ var keys = keyMap{
 	Install: key.NewBinding(
 		key.WithKeys("i"),
 		key.WithHelp("i", "install"),
+	),
+	Machine: key.NewBinding(
+		key.WithKeys("m"),
+		key.WithHelp("m", "overrides"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
@@ -95,15 +109,16 @@ var keys = keyMap{
 }
 
 // New creates a new dashboard model
-func New(p *platform.Platform, driftSummary *stow.DriftSummary, configs []config.ConfigItem, dotfilesPath string, updateMsg string, hasBaseline bool) Model {
+func New(p *platform.Platform, driftSummary *stow.DriftSummary, machineStatus []MachineStatus, configs []config.ConfigItem, dotfilesPath string, updateMsg string, hasBaseline bool) Model {
 	return Model{
-		platform:     p,
-		driftSummary: driftSummary,
-		configs:      configs,
-		dotfilesPath: dotfilesPath,
-		updateMsg:    updateMsg,
-		selectedIdx:  0,
-		hasBaseline:  hasBaseline,
+		platform:      p,
+		driftSummary:  driftSummary,
+		machineStatus: machineStatus,
+		configs:       configs,
+		dotfilesPath:  dotfilesPath,
+		updateMsg:     updateMsg,
+		selectedIdx:   0,
+		hasBaseline:   hasBaseline,
 	}
 }
 
@@ -130,6 +145,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, keys.Install):
 			m.result = &Result{Action: ActionInstall}
+			return m, tea.Quit
+
+		case key.Matches(msg, keys.Machine):
+			m.result = &Result{Action: ActionMachineConfig}
 			return m, tea.Quit
 
 		case key.Matches(msg, keys.Up):
@@ -176,6 +195,13 @@ func (m Model) View() string {
 	status := m.renderStatus()
 	b.WriteString(status)
 	b.WriteString("\n\n")
+
+	// Machine status (if any)
+	if len(m.machineStatus) > 0 {
+		machineStatus := m.renderMachineStatus()
+		b.WriteString(machineStatus)
+		b.WriteString("\n\n")
+	}
 
 	// Config list
 	configList := m.renderConfigList()
@@ -236,6 +262,33 @@ func (m Model) renderStatus() string {
 		Foreground(ui.SecondaryColor).
 		Bold(true).
 		Render("  All synced")
+}
+
+func (m Model) renderMachineStatus() string {
+	var parts []string
+
+	headerStyle := lipgloss.NewStyle().Foreground(ui.SubtleColor).Bold(true)
+	parts = append(parts, headerStyle.Render("  Overrides:"))
+
+	okStyle := lipgloss.NewStyle().Foreground(ui.SecondaryColor)
+	missStyle := lipgloss.NewStyle().Foreground(ui.WarningColor)
+	errStyle := lipgloss.NewStyle().Foreground(ui.ErrorColor)
+
+	for _, status := range m.machineStatus {
+		icon := ""
+		switch status.Status {
+		case "configured":
+			icon = okStyle.Render("+")
+		case "missing":
+			icon = missStyle.Render("x")
+		case "error":
+			icon = errStyle.Render("!")
+		}
+
+		parts = append(parts, fmt.Sprintf("%s %s", icon, status.ID))
+	}
+
+	return strings.Join(parts, "  ")
 }
 
 func (m Model) renderConfigList() string {
@@ -320,6 +373,7 @@ func (m Model) renderActions() string {
 		keyStyle.Render("[s]") + style.Render(" Sync All"),
 		keyStyle.Render("[i]") + style.Render(" Install"),
 		keyStyle.Render("[d]") + style.Render(" Doctor"),
+		keyStyle.Render("[m]") + style.Render(" Overrides"),
 		keyStyle.Render("[enter]") + style.Render(" Sync Selected"),
 		keyStyle.Render("[q]") + style.Render(" Quit"),
 	}
@@ -333,8 +387,8 @@ func (m Model) GetResult() *Result {
 }
 
 // Run starts the dashboard and returns the selected action
-func Run(p *platform.Platform, driftSummary *stow.DriftSummary, configs []config.ConfigItem, dotfilesPath string, updateMsg string, hasBaseline bool) (*Result, error) {
-	m := New(p, driftSummary, configs, dotfilesPath, updateMsg, hasBaseline)
+func Run(p *platform.Platform, driftSummary *stow.DriftSummary, machineStatus []MachineStatus, configs []config.ConfigItem, dotfilesPath string, updateMsg string, hasBaseline bool) (*Result, error) {
+	m := New(p, driftSummary, machineStatus, configs, dotfilesPath, updateMsg, hasBaseline)
 
 	finalModel, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
 	if err != nil {
@@ -346,12 +400,12 @@ func Run(p *platform.Platform, driftSummary *stow.DriftSummary, configs []config
 
 // SetupModel is the Bubbletea model for the setup screen (no config)
 type SetupModel struct {
-	width      int
-	height     int
-	platform   *platform.Platform
-	updateMsg  string
-	result     *Result
-	quitting   bool
+	width       int
+	height      int
+	platform    *platform.Platform
+	updateMsg   string
+	result      *Result
+	quitting    bool
 	selectedIdx int
 }
 

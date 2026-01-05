@@ -83,3 +83,19 @@ func LoadFromPath(path string) (*Config, error) {
 
 	return Load(path)
 }
+
+// ResolveRepoRoot determines the repository root from a path
+func ResolveRepoRoot(path string) (string, error) {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	stat, err := os.Stat(absPath)
+	if err != nil {
+		return "", err
+	}
+	if stat.IsDir() {
+		return absPath, nil
+	}
+	return filepath.Dir(absPath), nil
+}

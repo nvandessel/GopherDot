@@ -7,8 +7,6 @@ import (
 
 	"github.com/nvandessel/go4dot/internal/config"
 	"github.com/nvandessel/go4dot/internal/setup"
-	"github.com/nvandessel/go4dot/internal/state"
-	"github.com/nvandessel/go4dot/internal/stow"
 	"github.com/nvandessel/go4dot/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -142,7 +140,9 @@ Use flags to customize the installation:
 			fmt.Print(result.Summary())
 
 			// Save state
-			saveInstallState(cfg, dotfilesPath, result)
+			if err := setup.SaveState(cfg, dotfilesPath, result); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to save state: %v\n", err)
+			}
 
 			// Show post-install message if present
 			if cfg.PostInstall != "" {
@@ -151,58 +151,6 @@ Use flags to customize the installation:
 			}
 		}
 	},
-}
-
-// saveInstallState saves the installation state for future reference
-func saveInstallState(cfg *config.Config, dotfilesPath string, result *setup.InstallResult) {
-	st := state.New()
-	st.DotfilesPath = dotfilesPath
-
-	// Save platform info
-	if result.Platform != nil {
-		st.Platform = state.PlatformState{
-			OS:             result.Platform.OS,
-			Distro:         result.Platform.Distro,
-			DistroVersion:  result.Platform.DistroVersion,
-			PackageManager: result.Platform.PackageManager,
-		}
-	}
-
-	// Save installed configs
-	for _, configName := range result.ConfigsStowed {
-		item := cfg.GetConfigByName(configName)
-		isCore := false
-		if item != nil {
-			// Check if it's a core config
-			for _, c := range cfg.Configs.Core {
-				if c.Name == configName {
-					isCore = true
-					break
-				}
-			}
-		}
-		st.AddConfig(configName, configName, isCore)
-	}
-
-	// Save external deps
-	for _, ext := range result.ExternalCloned {
-		st.SetExternalDep(ext.ID, ext.Destination, true)
-	}
-
-	// Save machine configs
-	for _, mc := range result.MachineConfigs {
-		st.SetMachineConfig(mc.ID, mc.Destination, false, false)
-	}
-
-	// Update symlink counts so dashboard shows correct sync status
-	if err := stow.UpdateSymlinkCounts(cfg, dotfilesPath, st); err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: failed to update symlink counts: %v\n", err)
-	}
-
-	// Save state
-	if err := st.Save(); err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: failed to save state: %v\n", err)
-	}
 }
 
 func init() {

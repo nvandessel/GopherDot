@@ -197,7 +197,7 @@ func TestCheckCondition(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := CheckCondition(tt.condition, tt.platform)
+			got := platform.CheckCondition(tt.condition, tt.platform)
 			if got != tt.want {
 				t.Errorf("CheckCondition(%v) = %v, want %v", tt.condition, got, tt.want)
 			}
@@ -206,25 +206,8 @@ func TestCheckCondition(t *testing.T) {
 }
 
 func TestMatchesValue(t *testing.T) {
-	tests := []struct {
-		actual   string
-		expected string
-		want     bool
-	}{
-		{"linux", "linux", true},
-		{"linux", "darwin", false},
-		{"linux", "linux,darwin", true},
-		{"darwin", "linux,darwin", true},
-		{"windows", "linux,darwin", false},
-		{"linux", " linux , darwin ", true}, // with spaces
-	}
-
-	for _, tt := range tests {
-		got := matchesValue(tt.actual, tt.expected)
-		if got != tt.want {
-			t.Errorf("matchesValue(%q, %q) = %v, want %v", tt.actual, tt.expected, got, tt.want)
-		}
-	}
+	// This is now tested in platform package, but we can keep a simple test here if needed
+	// or just remove it. Since it's internal to platform now, we'll remove it from here.
 }
 
 func TestCheckDestination(t *testing.T) {

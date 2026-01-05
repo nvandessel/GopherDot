@@ -7,6 +7,7 @@ import (
 	"github.com/nvandessel/go4dot/internal/deps"
 	"github.com/nvandessel/go4dot/internal/machine"
 	"github.com/nvandessel/go4dot/internal/platform"
+	"github.com/nvandessel/go4dot/internal/state"
 	"github.com/nvandessel/go4dot/internal/stow"
 )
 
@@ -319,4 +320,58 @@ func (r *InstallResult) Summary() string {
 	}
 
 	return summary
+}
+
+// SaveState saves the installation state to the standard location.
+func SaveState(cfg *config.Config, dotfilesPath string, result *InstallResult) error {
+	st := state.New()
+	st.DotfilesPath = dotfilesPath
+
+	// Save platform info
+	if result.Platform != nil {
+		st.Platform = state.PlatformState{
+			OS:             result.Platform.OS,
+			Distro:         result.Platform.Distro,
+			DistroVersion:  result.Platform.DistroVersion,
+			PackageManager: result.Platform.PackageManager,
+		}
+	}
+
+	// Save installed configs
+	for _, configName := range result.ConfigsStowed {
+		item := cfg.GetConfigByName(configName)
+		isCore := false
+		if item != nil {
+			// Check if it's a core config
+			for _, c := range cfg.Configs.Core {
+				if c.Name == configName {
+					isCore = true
+					break
+				}
+			}
+		}
+		st.AddConfig(configName, configName, isCore)
+	}
+
+	// Save external deps
+	for _, ext := range result.ExternalCloned {
+		st.SetExternalDep(ext.ID, ext.Destination, true)
+	}
+
+	// Save machine configs
+	for _, mc := range result.MachineConfigs {
+		st.SetMachineConfig(mc.ID, mc.Destination, false, false)
+	}
+
+	// Update symlink counts so dashboard shows correct sync status
+	if err := stow.UpdateSymlinkCounts(cfg, dotfilesPath, st); err != nil {
+		return fmt.Errorf("failed to update symlink counts: %w", err)
+	}
+
+	// Save state
+	if err := st.Save(); err != nil {
+		return fmt.Errorf("failed to save state: %w", err)
+	}
+
+	return nil
 }

@@ -54,7 +54,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 
 	for _, ext := range cfg.External {
 		// Check condition
-		if !CheckCondition(ext.Condition, p) {
+		if !platform.CheckCondition(ext.Condition, p) {
 			result.Skipped = append(result.Skipped, ExternalSkipped{
 				Dep:    ext,
 				Reason: "condition not met",
@@ -79,26 +79,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 		exists, isGit := checkDestination(destPath)
 
 		if exists {
-			// If method is copy and merge strategy is keep_existing, we might still want to proceed
-			// to copy new files, but checkDestination returns true if directory exists.
-			// However, the main logic for updates usually assumes git repo.
-			// For "copy" method, "exists" usually means we skip or overwrite.
-
 			if ext.Method == "copy" {
-				// For copy method, we re-run to handle potential new files or updates
-				// unless it's strictly an update of a git repo which this is not.
-				// We proceed to copy logic below, which handles merge strategy.
-				// BUT, if we blindly proceed, we might be redundant.
-				// However, standard logic below for "exists" handles git updates.
-				// Let's refine:
-
-				// If it's a copy method, we don't treat directory existence as "skip" if we want to merge.
-				// But we also don't want to re-clone if everything is there.
-				// For now, let's treat "copy" as always needing execution if we want to support "updates" via copy,
-				// but the original code skipped if exists.
-
-				// If we want to support "keep_existing" merge strategy, we imply we are running it to fill gaps.
-				// So we should NOT skip if it exists.
 				goto Execute
 			}
 
@@ -199,7 +180,7 @@ func CloneSingle(cfg *config.Config, p *platform.Platform, id string, opts Exter
 	}
 
 	// Check condition
-	if !CheckCondition(found.Condition, p) {
+	if !platform.CheckCondition(found.Condition, p) {
 		return fmt.Errorf("condition not met for '%s'", id)
 	}
 
@@ -270,7 +251,7 @@ func CheckExternalStatus(cfg *config.Config, p *platform.Platform, repoRoot stri
 		}
 
 		// Check condition
-		if !CheckCondition(ext.Condition, p) {
+		if !platform.CheckCondition(ext.Condition, p) {
 			status.Status = "skipped"
 			status.Reason = "condition not met"
 			statuses = append(statuses, status)
@@ -352,55 +333,6 @@ func checkDestination(path string) (exists bool, isGit bool) {
 		return true, true
 	}
 	return true, false
-}
-
-// CheckCondition evaluates if an external dependency should be cloned
-// based on platform conditions. Exported for use by other packages.
-func CheckCondition(condition map[string]string, p *platform.Platform) bool {
-	if condition == nil || len(condition) == 0 {
-		return true // No condition means always clone
-	}
-
-	for key, value := range condition {
-		switch key {
-		case "platform", "os":
-			if !matchesValue(p.OS, value) {
-				return false
-			}
-		case "distro":
-			if !matchesValue(p.Distro, value) {
-				return false
-			}
-		case "package_manager":
-			if !matchesValue(p.PackageManager, value) {
-				return false
-			}
-		case "wsl":
-			if value == "true" && !p.IsWSL {
-				return false
-			}
-			if value == "false" && p.IsWSL {
-				return false
-			}
-		case "arch", "architecture":
-			if !matchesValue(p.Architecture, value) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-// matchesValue checks if actual matches expected (supports comma-separated list)
-func matchesValue(actual, expected string) bool {
-	// Support comma-separated values (e.g., "linux,darwin")
-	values := strings.Split(expected, ",")
-	for _, v := range values {
-		if strings.TrimSpace(v) == actual {
-			return true
-		}
-	}
-	return false
 }
 
 // gitClone clones a repository to the destination

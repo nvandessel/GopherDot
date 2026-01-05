@@ -30,7 +30,7 @@ var externalStatusCmd = &cobra.Command{
 		if len(args) > 0 {
 			cfg, err = config.LoadFromPath(args[0])
 			if err == nil {
-				repoRoot, _ = resolveRepoRoot(args[0])
+				repoRoot, _ = config.ResolveRepoRoot(args[0])
 			}
 		} else {
 			var configPath string
@@ -127,7 +127,7 @@ With an ID argument, clones only that specific dependency.`,
 		if configPathArg != "" {
 			cfg, err = config.LoadFromPath(configPathArg)
 			if err == nil {
-				repoRoot, _ = resolveRepoRoot(configPathArg)
+				repoRoot, _ = config.ResolveRepoRoot(configPathArg)
 			}
 		} else {
 			var configPath string
@@ -229,7 +229,7 @@ With an ID argument, updates only that specific dependency.`,
 		if configPathArg != "" {
 			cfg, err = config.LoadFromPath(configPathArg)
 			if err == nil {
-				repoRoot, _ = resolveRepoRoot(configPathArg)
+				repoRoot, _ = config.ResolveRepoRoot(configPathArg)
 			}
 		} else {
 			var configPath string
@@ -318,7 +318,7 @@ var externalRemoveCmd = &cobra.Command{
 		if len(args) > 1 {
 			cfg, err = config.LoadFromPath(args[1])
 			if err == nil {
-				repoRoot, _ = resolveRepoRoot(args[1])
+				repoRoot, _ = config.ResolveRepoRoot(args[1])
 			}
 		} else {
 			var configPath string
@@ -346,22 +346,6 @@ var externalRemoveCmd = &cobra.Command{
 			os.Exit(1)
 		}
 	},
-}
-
-// resolveRepoRoot determines the repository root from a path argument
-func resolveRepoRoot(path string) (string, error) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", err
-	}
-	stat, err := os.Stat(absPath)
-	if err != nil {
-		return "", err
-	}
-	if stat.IsDir() {
-		return absPath, nil
-	}
-	return filepath.Dir(absPath), nil
 }
 
 func init() {

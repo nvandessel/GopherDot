@@ -122,7 +122,7 @@ func syncSingleConfig(configName string, cfg *config.Config, dotfilesPath string
 	}
 
 	// Do the sync
-	err = stow.Restow(dotfilesPath, configItem.Path, stow.StowOptions{
+	err = stow.SyncSingle(dotfilesPath, configName, cfg, st, stow.StowOptions{
 		ProgressFunc: func(msg string) {
 			fmt.Printf("  %s\n", msg)
 		},
@@ -131,11 +131,6 @@ func syncSingleConfig(configName string, cfg *config.Config, dotfilesPath string
 	if err != nil {
 		ui.Error("Failed to sync %s: %v", configName, err)
 		os.Exit(1)
-	}
-
-	// Update state
-	if st != nil {
-		stow.UpdateSymlinkCounts(cfg, dotfilesPath, st)
 	}
 
 	ui.Success("Synced %s", configName)
@@ -187,15 +182,15 @@ func syncAllConfigs(cfg *config.Config, dotfilesPath string, st *state.State) {
 	}
 
 	// Do the sync
-	result := stow.RestowConfigs(dotfilesPath, allConfigs, stow.StowOptions{
+	result, err := stow.SyncAll(dotfilesPath, cfg, st, ui.IsInteractive(), stow.StowOptions{
 		ProgressFunc: func(msg string) {
 			fmt.Printf("  %s\n", msg)
 		},
 	})
 
-	// Update state
-	if st != nil {
-		stow.UpdateSymlinkCounts(cfg, dotfilesPath, st)
+	if err != nil {
+		ui.Error("%v", err)
+		os.Exit(1)
 	}
 
 	if len(result.Failed) > 0 {
