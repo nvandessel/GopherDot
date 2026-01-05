@@ -40,15 +40,8 @@ See the [Installation Guide](docs/installation.md) for other methods.
 
 2. **Install:**
    ```bash
-   g4d install
+   g4d
    ```
-
-### Creating New Dotfiles?
-
-```bash
-cd ~/my-dotfiles
-g4d init
-```
 
 ## 📚 Documentation
 
