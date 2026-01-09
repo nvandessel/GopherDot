@@ -21,7 +21,7 @@ type spinnerModel struct {
 func initialSpinnerModel(msg string, action func() error) spinnerModel {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	s.Style = lipgloss.NewStyle().Foreground(PrimaryColor)
 	return spinnerModel{
 		spinner: s,
 		message: msg,

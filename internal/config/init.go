@@ -13,9 +13,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	subtle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262"))
-)
+// subtle uses the same color as ui.SubtleColor to maintain visual consistency.
+// Defined locally to avoid import cycle (ui imports config via config_list.go).
+var subtle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262"))
 
 // InitConfig scans the directory and interactively generates a configuration
 // using standard input/output

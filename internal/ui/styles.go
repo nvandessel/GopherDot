@@ -11,6 +11,7 @@ var (
 	ErrorColor     = lipgloss.Color("#FF0000") // Red
 	WarningColor   = lipgloss.Color("#FFCC00") // Yellow
 	SubtleColor    = lipgloss.Color("#626262") // Gray
+	TextColor      = lipgloss.Color("#FFFFFF") // White
 
 	// Text Styles
 	TitleStyle = lipgloss.NewStyle().
@@ -19,7 +20,7 @@ var (
 			MarginBottom(1)
 
 	TextStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF"))
+			Foreground(TextColor)
 
 	SubtleStyle = lipgloss.NewStyle().
 			Foreground(SubtleColor)
@@ -30,6 +31,10 @@ var (
 
 	SuccessStyle = lipgloss.NewStyle().
 			Foreground(SecondaryColor).
+			Bold(true)
+
+	WarningStyle = lipgloss.NewStyle().
+			Foreground(WarningColor).
 			Bold(true)
 
 	// Box Styles

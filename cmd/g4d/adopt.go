@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/nvandessel/go4dot/internal/config"
 	"github.com/nvandessel/go4dot/internal/state"
 	"github.com/nvandessel/go4dot/internal/stow"
@@ -74,11 +73,11 @@ func runAdopt(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// Display results
-	okStyle := lipgloss.NewStyle().Foreground(ui.SecondaryColor).Bold(true)
-	warnStyle := lipgloss.NewStyle().Foreground(ui.WarningColor).Bold(true)
-	errStyle := lipgloss.NewStyle().Foreground(ui.ErrorColor).Bold(true)
-	subtleStyle := lipgloss.NewStyle().Foreground(ui.SubtleColor)
+	// Display results using central styles
+	okStyle := ui.SuccessStyle
+	warnStyle := ui.WarningStyle
+	errStyle := ui.ErrorStyle
+	subtleStyle := ui.SubtleStyle
 
 	// Fully linked
 	fullyLinked := summary.GetFullyLinked()

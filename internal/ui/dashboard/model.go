@@ -344,12 +344,12 @@ func (m Model) renderMachineStatus() string {
 func (m Model) renderConfigList() string {
 	var lines []string
 
-	normalStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF"))
-	selectedStyle := lipgloss.NewStyle().Foreground(ui.PrimaryColor).Bold(true)
+	normalStyle := ui.TextStyle
+	selectedStyle := ui.SelectedItemStyle
 	okStyle := lipgloss.NewStyle().Foreground(ui.SecondaryColor)
-	warnStyle := lipgloss.NewStyle().Foreground(ui.WarningColor)
-	errStyle := lipgloss.NewStyle().Foreground(ui.ErrorColor)
-	subtleStyle := lipgloss.NewStyle().Foreground(ui.SubtleColor)
+	warnStyle := ui.WarningStyle
+	errStyle := ui.ErrorStyle
+	subtleStyle := ui.SubtleStyle
 
 	// Build a map of drift results for quick lookup
 	driftMap := make(map[string]*stow.DriftResult)
@@ -613,15 +613,14 @@ func (m SetupModel) View() string {
 	b.WriteString("\n\n")
 
 	// Message
-	messageStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF"))
-	b.WriteString(messageStyle.Render("  No .go4dot.yaml found in current directory."))
+	b.WriteString(ui.TextStyle.Render("  No .go4dot.yaml found in current directory."))
 	b.WriteString("\n")
 	b.WriteString(subtitleStyle.Render("  Initialize go4dot to start managing your dotfiles."))
 	b.WriteString("\n\n")
 
 	// Options
-	normalStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF"))
-	selectedStyle := lipgloss.NewStyle().Foreground(ui.PrimaryColor).Bold(true)
+	normalStyle := ui.TextStyle
+	selectedStyle := ui.SelectedItemStyle
 
 	options := []struct {
 		label string
