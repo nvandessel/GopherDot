@@ -66,14 +66,20 @@ Use flags to customize the installation:
 			SkipMachine:  skipMachine,
 			SkipStow:     skipStow,
 			Overwrite:    overwrite,
-			ProgressFunc: func(msg string) {
+			ProgressFunc: func(current, total int, msg string) {
 				// Simple heuristic to style the output from setup package
 				if len(msg) > 0 && msg[0] == '\n' {
 					ui.Section(msg[1:]) // Remove newline and print as section
 					return
 				}
 
-				// Already styled symbols from setup package: ✓, ⚠, ⊘
+				// Build item counter prefix if we have counts
+				var counterPrefix string
+				if total > 0 && current > 0 {
+					counterPrefix = fmt.Sprintf("[%d/%d] ", current, total)
+				}
+
+				// Already styled symbols from setup package: ✓, ⚠, ⊘, ✗, ⬇, ↻
 				// We can just print them, or replace them with our UI icons
 				if len(msg) > 2 {
 					prefix := msg[:2] // Get symbol and space
@@ -81,20 +87,31 @@ Use flags to customize the installation:
 
 					switch prefix {
 					case "✓ ":
-						ui.Success("%s", content)
+						ui.Success("%s%s", counterPrefix, content)
 						return
 					case "⚠ ":
-						ui.Warning("%s", content)
+						ui.Warning("%s%s", counterPrefix, content)
+						return
+					case "✗ ":
+						ui.Error("%s%s", counterPrefix, content)
 						return
 					case "⊘ ":
 						// Skip symbol, print as info/subtle
-						fmt.Println("  " + msg)
+						fmt.Printf("  %s%s\n", counterPrefix, msg)
+						return
+					case "⬇ ", "↻ ":
+						// Download/update in progress
+						fmt.Printf("  %s%s\n", counterPrefix, msg)
 						return
 					}
 				}
 
-				// Default
-				fmt.Println(msg)
+				// Default - include counter if present
+				if counterPrefix != "" {
+					fmt.Printf("%s%s\n", counterPrefix, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 

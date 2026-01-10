@@ -92,15 +92,23 @@ With an ID argument, configures only that specific setting.`,
 
 		promptOpts := machine.PromptOptions{
 			SkipPrompts: skipPrompts,
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 
 		renderOpts := machine.RenderOptions{
 			Overwrite: overwrite,
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 
@@ -217,8 +225,12 @@ var machineRemoveCmd = &cobra.Command{
 		}
 
 		opts := machine.RenderOptions{
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 

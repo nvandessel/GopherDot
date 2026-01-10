@@ -180,7 +180,7 @@ func TestStowOptionsProgressCallback(t *testing.T) {
 	var progressMessages []string
 	opts := StowOptions{
 		DryRun: true,
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}

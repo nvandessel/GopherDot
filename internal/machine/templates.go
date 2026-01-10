@@ -20,9 +20,9 @@ type RenderResult struct {
 
 // RenderOptions configures template rendering
 type RenderOptions struct {
-	DryRun       bool             // Don't write files, just return content
-	Overwrite    bool             // Overwrite existing files
-	ProgressFunc func(msg string) // Called for progress updates
+	DryRun       bool                                 // Don't write files, just return content
+	Overwrite    bool                                 // Overwrite existing files
+	ProgressFunc func(current, total int, msg string) // Called for progress updates with item counts
 }
 
 // RenderMachineConfig renders a machine config template with the given values
@@ -61,9 +61,9 @@ func RenderAndWrite(mc *config.MachinePrompt, values map[string]string, opts Ren
 
 	if opts.ProgressFunc != nil {
 		if opts.DryRun {
-			opts.ProgressFunc(fmt.Sprintf("Would write %s to %s", mc.ID, result.Destination))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("Would write %s to %s", mc.ID, result.Destination))
 		} else {
-			opts.ProgressFunc(fmt.Sprintf("Writing %s to %s", mc.ID, result.Destination))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("Writing %s to %s", mc.ID, result.Destination))
 		}
 	}
 
@@ -88,7 +88,7 @@ func RenderAndWrite(mc *config.MachinePrompt, values map[string]string, opts Ren
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("✓ Created %s", result.Destination))
+		opts.ProgressFunc(0, 0, fmt.Sprintf("✓ Created %s", result.Destination))
 	}
 
 	return result, nil
@@ -171,9 +171,9 @@ func RemoveMachineConfig(mc *config.MachinePrompt, opts RenderOptions) error {
 
 	if opts.ProgressFunc != nil {
 		if opts.DryRun {
-			opts.ProgressFunc(fmt.Sprintf("Would remove %s", dest))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("Would remove %s", dest))
 		} else {
-			opts.ProgressFunc(fmt.Sprintf("Removing %s", dest))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("Removing %s", dest))
 		}
 	}
 
@@ -186,7 +186,7 @@ func RemoveMachineConfig(mc *config.MachinePrompt, opts RenderOptions) error {
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("✓ Removed %s", dest))
+		opts.ProgressFunc(0, 0, fmt.Sprintf("✓ Removed %s", dest))
 	}
 
 	return nil

@@ -33,10 +33,10 @@ type ExternalSkipped struct {
 
 // ExternalOptions configures the clone behavior
 type ExternalOptions struct {
-	DryRun       bool             // Don't actually clone, just report
-	Update       bool             // Pull updates for existing repos
-	RepoRoot     string           // Path to dotfiles root for @repoRoot expansion
-	ProgressFunc func(msg string) // Called for progress updates
+	DryRun       bool                                 // Don't actually clone, just report
+	Update       bool                                 // Pull updates for existing repos
+	RepoRoot     string                               // Path to dotfiles root for @repoRoot expansion
+	ProgressFunc func(current, total int, msg string) // Called for progress updates with item counts
 }
 
 // CloneExternal clones all external dependencies from the config
@@ -52,7 +52,10 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 		return nil, fmt.Errorf("git is required but not found in PATH")
 	}
 
-	for _, ext := range cfg.External {
+	total := len(cfg.External)
+	for i, ext := range cfg.External {
+		current := i + 1
+
 		// Check condition
 		if !platform.CheckCondition(ext.Condition, p) {
 			result.Skipped = append(result.Skipped, ExternalSkipped{
@@ -60,7 +63,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 				Reason: "condition not met",
 			})
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("⊘ Skipping %s (condition not met)", ext.Name))
+				opts.ProgressFunc(current, total, fmt.Sprintf("⊘ Skipping %s (condition not met)", ext.Name))
 			}
 			continue
 		}
@@ -86,7 +89,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 			if opts.Update && isGit {
 				// Update existing repo
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("↻ Updating %s...", ext.Name))
+					opts.ProgressFunc(current, total, fmt.Sprintf("↻ Updating %s...", ext.Name))
 				}
 
 				if !opts.DryRun {
@@ -101,7 +104,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 
 				result.Updated = append(result.Updated, ext)
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("✓ Updated %s", ext.Name))
+					opts.ProgressFunc(current, total, fmt.Sprintf("✓ Updated %s", ext.Name))
 				}
 			} else {
 				// Skip existing
@@ -110,7 +113,7 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 					Reason: "already exists",
 				})
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("⊘ Skipping %s (already exists)", ext.Name))
+					opts.ProgressFunc(current, total, fmt.Sprintf("⊘ Skipping %s (already exists)", ext.Name))
 				}
 			}
 			continue
@@ -119,13 +122,13 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 	Execute:
 		// Clone the repository
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("⬇ Cloning %s...", ext.Name))
+			opts.ProgressFunc(current, total, fmt.Sprintf("⬇ Cloning %s...", ext.Name))
 		}
 
 		if opts.DryRun {
 			result.Cloned = append(result.Cloned, ext)
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("✓ Would clone %s to %s", ext.Name, destPath))
+				opts.ProgressFunc(current, total, fmt.Sprintf("✓ Would clone %s to %s", ext.Name, destPath))
 			}
 			continue
 		}
@@ -152,12 +155,12 @@ func CloneExternal(cfg *config.Config, p *platform.Platform, opts ExternalOption
 				Error: cloneErr,
 			})
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("✗ Failed to clone %s: %v", ext.Name, cloneErr))
+				opts.ProgressFunc(current, total, fmt.Sprintf("✗ Failed to clone %s: %v", ext.Name, cloneErr))
 			}
 		} else {
 			result.Cloned = append(result.Cloned, ext)
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("✓ Cloned %s", ext.Name))
+				opts.ProgressFunc(current, total, fmt.Sprintf("✓ Cloned %s", ext.Name))
 			}
 		}
 	}
@@ -199,7 +202,7 @@ func CloneSingle(cfg *config.Config, p *platform.Platform, id string, opts Exter
 
 		if opts.Update && isGit {
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("↻ Updating %s...", found.Name))
+				opts.ProgressFunc(1, 1, fmt.Sprintf("↻ Updating %s...", found.Name))
 			}
 			if !opts.DryRun {
 				if err := gitPull(destPath); err != nil {
@@ -207,7 +210,7 @@ func CloneSingle(cfg *config.Config, p *platform.Platform, id string, opts Exter
 				}
 			}
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("✓ Updated %s", found.Name))
+				opts.ProgressFunc(1, 1, fmt.Sprintf("✓ Updated %s", found.Name))
 			}
 			return nil
 		}
@@ -216,12 +219,12 @@ func CloneSingle(cfg *config.Config, p *platform.Platform, id string, opts Exter
 
 Execute:
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("⬇ Cloning %s...", found.Name))
+		opts.ProgressFunc(1, 1, fmt.Sprintf("⬇ Cloning %s...", found.Name))
 	}
 
 	if opts.DryRun {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("✓ Would clone %s to %s", found.Name, destPath))
+			opts.ProgressFunc(1, 1, fmt.Sprintf("✓ Would clone %s to %s", found.Name, destPath))
 		}
 		return nil
 	}
@@ -503,12 +506,12 @@ func RemoveExternal(cfg *config.Config, id string, opts ExternalOptions) error {
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Removing %s...", found.Name))
+		opts.ProgressFunc(1, 1, fmt.Sprintf("Removing %s...", found.Name))
 	}
 
 	if opts.DryRun {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("✓ Would remove %s from %s", found.Name, destPath))
+			opts.ProgressFunc(1, 1, fmt.Sprintf("✓ Would remove %s from %s", found.Name, destPath))
 		}
 		return nil
 	}
@@ -518,7 +521,7 @@ func RemoveExternal(cfg *config.Config, id string, opts ExternalOptions) error {
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("✓ Removed %s", found.Name))
+		opts.ProgressFunc(1, 1, fmt.Sprintf("✓ Removed %s", found.Name))
 	}
 
 	return nil

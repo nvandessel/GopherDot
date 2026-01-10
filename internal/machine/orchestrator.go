@@ -58,14 +58,14 @@ func RunInteractiveConfig(cfg *config.Config) {
 	}
 
 	promptOpts := PromptOptions{
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			fmt.Println(msg)
 		},
 	}
 
 	renderOpts := RenderOptions{
 		Overwrite: true,
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			fmt.Println(msg)
 		},
 	}

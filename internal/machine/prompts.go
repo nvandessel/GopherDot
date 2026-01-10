@@ -18,10 +18,10 @@ type PromptResult struct {
 
 // PromptOptions configures prompt behavior
 type PromptOptions struct {
-	In           io.Reader        // Input source (defaults to os.Stdin)
-	Out          io.Writer        // Output destination (defaults to os.Stdout)
-	ProgressFunc func(msg string) // Called for progress updates
-	SkipPrompts  bool             // Use defaults without prompting
+	In           io.Reader                            // Input source (defaults to os.Stdin)
+	Out          io.Writer                            // Output destination (defaults to os.Stdout)
+	ProgressFunc func(current, total int, msg string) // Called for progress updates with item counts
+	SkipPrompts  bool                                 // Use defaults without prompting
 }
 
 // CollectMachineConfig prompts the user for all machine-specific values
@@ -84,7 +84,7 @@ func collectPrompts(mc config.MachinePrompt, opts PromptOptions) (PromptResult, 
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Configuring %s...", mc.Description))
+		opts.ProgressFunc(0, 0, fmt.Sprintf("Configuring %s...", mc.Description))
 	}
 
 	// Prepare fields for the form

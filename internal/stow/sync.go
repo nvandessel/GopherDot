@@ -12,7 +12,7 @@ import (
 func SyncAll(dotfilesPath string, cfg *config.Config, st *state.State, interactive bool, opts StowOptions) (*StowResult, error) {
 	if interactive {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Checking for conflicts...")
+			opts.ProgressFunc(0, 0, "Checking for conflicts...")
 		}
 
 		conflicts, err := DetectConflicts(cfg, dotfilesPath)
@@ -28,7 +28,7 @@ func SyncAll(dotfilesPath string, cfg *config.Config, st *state.State, interacti
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc("Syncing all configs...")
+		opts.ProgressFunc(0, 0, "Syncing all configs...")
 	}
 
 	allConfigs := cfg.GetAllConfigs()
@@ -58,7 +58,7 @@ func SyncSingle(dotfilesPath string, configName string, cfg *config.Config, st *
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Syncing %s...", configName))
+		opts.ProgressFunc(0, 0, fmt.Sprintf("Syncing %s...", configName))
 	}
 
 	err := Restow(dotfilesPath, configItem.Path, opts)

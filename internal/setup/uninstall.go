@@ -14,13 +14,13 @@ import (
 type UninstallOptions struct {
 	RemoveExternal bool
 	RemoveMachine  bool
-	ProgressFunc   func(msg string)
+	ProgressFunc   func(current, total int, msg string)
 }
 
 // Uninstall removes the dotfiles installation.
 func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts UninstallOptions) error {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Uninstalling dotfiles from %s...", dotfilesPath))
+		opts.ProgressFunc(0, 0, fmt.Sprintf("Uninstalling dotfiles from %s...", dotfilesPath))
 	}
 
 	// Get configs to unstow
@@ -40,7 +40,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 	// Unstow configs
 	if len(configsToUnstow) > 0 {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("Unstowing %d configs...", len(configsToUnstow)))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("Unstowing %d configs...", len(configsToUnstow)))
 		}
 
 		stowOpts := stow.StowOptions{
@@ -51,7 +51,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 
 		if len(result.Failed) > 0 {
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("⚠ %d configs failed to unstow", len(result.Failed)))
+				opts.ProgressFunc(0, 0, fmt.Sprintf("⚠ %d configs failed to unstow", len(result.Failed)))
 			}
 		}
 	}
@@ -59,7 +59,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 	// Remove external deps if requested
 	if opts.RemoveExternal && len(cfg.External) > 0 {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Removing external dependencies...")
+			opts.ProgressFunc(0, 0, "Removing external dependencies...")
 		}
 
 		for _, ext := range cfg.External {
@@ -69,7 +69,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 
 			if err := deps.RemoveExternal(cfg, ext.ID, extOpts); err != nil {
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("  ⚠ Failed to remove %s: %v", ext.Name, err))
+					opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Failed to remove %s: %v", ext.Name, err))
 				}
 			}
 		}
@@ -78,7 +78,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 	// Remove machine configs if requested
 	if opts.RemoveMachine && len(cfg.MachineConfig) > 0 {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Removing machine configuration files...")
+			opts.ProgressFunc(0, 0, "Removing machine configuration files...")
 		}
 
 		for _, mc := range cfg.MachineConfig {
@@ -88,7 +88,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 
 			if err := machine.RemoveMachineConfig(&mc, renderOpts); err != nil {
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("  ⚠ Failed to remove %s: %v", mc.Description, err))
+					opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Failed to remove %s: %v", mc.Description, err))
 				}
 			}
 		}
@@ -100,7 +100,7 @@ func Uninstall(cfg *config.Config, dotfilesPath string, st *state.State, opts Un
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc("✓ Removed state file")
+		opts.ProgressFunc(0, 0, "✓ Removed state file")
 	}
 
 	return nil

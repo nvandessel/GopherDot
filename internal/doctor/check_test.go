@@ -413,7 +413,7 @@ func TestRunChecks(t *testing.T) {
 
 	var progressMessages []string
 	opts := CheckOptions{
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}
@@ -444,7 +444,7 @@ func TestRunChecks(t *testing.T) {
 func TestProgress(t *testing.T) {
 	var received string
 	opts := CheckOptions{
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			received = msg
 		},
 	}

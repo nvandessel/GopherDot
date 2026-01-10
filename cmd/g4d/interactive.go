@@ -202,8 +202,12 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 				st = state.New()
 			}
 			_, err := stow.SyncAll(dotfilesPath, cfg, st, true, stow.StowOptions{
-				ProgressFunc: func(msg string) {
-					fmt.Printf("  %s\n", msg)
+				ProgressFunc: func(current, total int, msg string) {
+					if total > 0 && current > 0 {
+						fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+					} else {
+						fmt.Printf("  %s\n", msg)
+					}
 				},
 			})
 			if err != nil {
@@ -222,8 +226,12 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 				st = state.New()
 			}
 			err := stow.SyncSingle(dotfilesPath, result.ConfigName, cfg, st, stow.StowOptions{
-				ProgressFunc: func(msg string) {
-					fmt.Printf("  %s\n", msg)
+				ProgressFunc: func(current, total int, msg string) {
+					if total > 0 && current > 0 {
+						fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+					} else {
+						fmt.Printf("  %s\n", msg)
+					}
 				},
 			})
 			if err != nil {
@@ -267,8 +275,12 @@ func handleAction(result *dashboard.Result, cfg *config.Config, configPath strin
 			st, _ := state.Load()
 			opts := setup.UpdateOptions{
 				UpdateExternal: true,
-				ProgressFunc: func(msg string) {
-					fmt.Println("  " + msg)
+				ProgressFunc: func(current, total int, msg string) {
+					if total > 0 && current > 0 {
+						fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+					} else {
+						fmt.Println("  " + msg)
+					}
 				},
 			}
 			if err := setup.Update(cfg, dotfilesPath, st, opts); err != nil {
@@ -334,8 +346,12 @@ func runMoreMenu(cfg *config.Config, configPath string) {
 			opts := setup.UninstallOptions{
 				RemoveExternal: true,
 				RemoveMachine:  true,
-				ProgressFunc: func(msg string) {
-					fmt.Println("  " + msg)
+				ProgressFunc: func(current, total int, msg string) {
+					if total > 0 && current > 0 {
+						fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+					} else {
+						fmt.Println("  " + msg)
+					}
 				},
 			}
 			if err := setup.Uninstall(cfg, dotfilesPath, st, opts); err != nil {

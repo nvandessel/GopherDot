@@ -93,8 +93,12 @@ Note: This does NOT delete your dotfiles repository, only the symlinks.`,
 		opts := setup.UninstallOptions{
 			RemoveExternal: removeExternal,
 			RemoveMachine:  removeMachine,
-			ProgressFunc: func(msg string) {
-				fmt.Println("  " + msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println("  " + msg)
+				}
 			},
 		}
 

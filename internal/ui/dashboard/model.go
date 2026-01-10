@@ -56,8 +56,8 @@ type Model struct {
 	dotfilesPath  string
 	updateMsg     string
 	selectedIdx   int
-	expandedIdx   int  // Index of expanded config (-1 = none)
-	scrollOffset  int  // Scroll offset within expanded file list
+	expandedIdx   int // Index of expanded config (-1 = none)
+	scrollOffset  int // Scroll offset within expanded file list
 	result        *Result
 	quitting      bool
 	hasBaseline   bool // True if we have stored symlink counts (synced before)

@@ -71,7 +71,7 @@ type AdoptionOpportunity struct {
 // CheckOptions configures the health check behavior
 type CheckOptions struct {
 	DotfilesPath string
-	ProgressFunc func(msg string)
+	ProgressFunc func(current, total int, msg string)
 }
 
 // RunChecks performs all health checks and returns results
@@ -531,7 +531,7 @@ func (r *CheckResult) CountByStatus() (ok, warnings, errors, skipped int) {
 // progress sends a progress message if the callback is set
 func progress(opts CheckOptions, msg string) {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(msg)
+		opts.ProgressFunc(0, 0, msg)
 	}
 }
 

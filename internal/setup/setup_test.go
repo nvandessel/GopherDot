@@ -152,7 +152,7 @@ func TestInstallWithSkipAll(t *testing.T) {
 		SkipStow:     true,
 		SkipExternal: true,
 		SkipMachine:  true,
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}
@@ -217,7 +217,7 @@ func TestInstallMinimalMode(t *testing.T) {
 func TestProgress(t *testing.T) {
 	var received string
 	opts := InstallOptions{
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			received = msg
 		},
 	}

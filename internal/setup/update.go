@@ -18,13 +18,13 @@ import (
 type UpdateOptions struct {
 	UpdateExternal bool
 	SkipRestow     bool
-	ProgressFunc   func(msg string)
+	ProgressFunc   func(current, total int, msg string)
 }
 
 // Update pulls latest changes from git and updates dotfiles.
 func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts UpdateOptions) error {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Updating dotfiles in %s...", dotfilesPath))
+		opts.ProgressFunc(0, 0, fmt.Sprintf("Updating dotfiles in %s...", dotfilesPath))
 	}
 
 	// Check if it's a git repo
@@ -37,13 +37,13 @@ func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts Updat
 	oldHead, err := gitHead(dotfilesPath)
 	if err != nil {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("  ⚠ Warning: could not get current HEAD: %v", err))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Warning: could not get current HEAD: %v", err))
 		}
 	}
 
 	// Run git pull
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc("Pulling latest changes...")
+		opts.ProgressFunc(0, 0, "Pulling latest changes...")
 	}
 	pullCmd := exec.Command("git", "pull", "--rebase")
 	pullCmd.Dir = dotfilesPath
@@ -55,41 +55,41 @@ func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts Updat
 	newHead, err := gitHead(dotfilesPath)
 	if err != nil {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("  ⚠ Warning: could not get new HEAD: %v", err))
+			opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Warning: could not get new HEAD: %v", err))
 		}
 	}
 
 	// Show what changed
 	if oldHead != "" && newHead != "" && oldHead != newHead {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Changes detected. Reloading config if needed...")
+			opts.ProgressFunc(0, 0, "Changes detected. Reloading config if needed...")
 		}
 
 		// Check if config file changed
 		configChanged, _ := gitFileChanged(dotfilesPath, oldHead, newHead, config.ConfigFileName)
 		if configChanged {
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("  Note: %s was updated. Reloading config...", config.ConfigFileName))
+				opts.ProgressFunc(0, 0, fmt.Sprintf("  Note: %s was updated. Reloading config...", config.ConfigFileName))
 			}
 			newCfg, err := config.LoadFromPath(dotfilesPath)
 			if err == nil {
 				*cfg = *newCfg
 			} else {
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("  ⚠ Warning: failed to reload config: %v", err))
+					opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Warning: failed to reload config: %v", err))
 				}
 			}
 		}
 	} else {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Already up to date.")
+			opts.ProgressFunc(0, 0, "Already up to date.")
 		}
 	}
 
 	// Restow configs
 	if !opts.SkipRestow {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Restowing configs...")
+			opts.ProgressFunc(0, 0, "Restowing configs...")
 		}
 
 		stowOpts := stow.StowOptions{
@@ -115,11 +115,11 @@ func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts Updat
 
 			if len(result.Failed) > 0 {
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("  ⚠ %d configs failed to restow", len(result.Failed)))
+					opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ %d configs failed to restow", len(result.Failed)))
 				}
 			} else {
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("✓ Restowed %d configs", len(result.Success)))
+					opts.ProgressFunc(0, 0, fmt.Sprintf("✓ Restowed %d configs", len(result.Success)))
 				}
 			}
 		}
@@ -128,13 +128,13 @@ func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts Updat
 	// Update external deps if requested
 	if opts.UpdateExternal && len(cfg.External) > 0 {
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc("Updating external dependencies...")
+			opts.ProgressFunc(0, 0, "Updating external dependencies...")
 		}
 
 		p, err := platform.Detect()
 		if err != nil {
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("  ⚠ Warning: failed to detect platform: %v", err))
+				opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Warning: failed to detect platform: %v", err))
 			}
 		} else {
 			extOpts := deps.ExternalOptions{
@@ -146,17 +146,17 @@ func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts Updat
 			result, err := deps.CloneExternal(cfg, p, extOpts)
 			if err != nil {
 				if opts.ProgressFunc != nil {
-					opts.ProgressFunc(fmt.Sprintf("  ⚠ Warning: failed to update externals: %v", err))
+					opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Warning: failed to update externals: %v", err))
 				}
 			} else {
 				if len(result.Updated) > 0 {
 					if opts.ProgressFunc != nil {
-						opts.ProgressFunc(fmt.Sprintf("✓ Updated %d external dependencies", len(result.Updated)))
+						opts.ProgressFunc(0, 0, fmt.Sprintf("✓ Updated %d external dependencies", len(result.Updated)))
 					}
 				}
 				if len(result.Failed) > 0 {
 					if opts.ProgressFunc != nil {
-						opts.ProgressFunc(fmt.Sprintf("  ⚠ %d external deps failed to update", len(result.Failed)))
+						opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ %d external deps failed to update", len(result.Failed)))
 					}
 				}
 			}
@@ -168,7 +168,7 @@ func Update(cfg *config.Config, dotfilesPath string, st *state.State, opts Updat
 		st.DotfilesPath = dotfilesPath
 		if err := st.Save(); err != nil {
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("  ⚠ Warning: failed to save state: %v", err))
+				opts.ProgressFunc(0, 0, fmt.Sprintf("  ⚠ Warning: failed to save state: %v", err))
 			}
 		}
 	}

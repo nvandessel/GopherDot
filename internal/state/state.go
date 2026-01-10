@@ -48,10 +48,10 @@ type ConfigState struct {
 
 // MachineState tracks machine-specific configuration
 type MachineState struct {
-	ConfigPath  string    `json:"config_path"`
-	CreatedAt   time.Time `json:"created_at"`
-	HasGPG      bool      `json:"has_gpg,omitempty"`
-	HasSSH      bool      `json:"has_ssh,omitempty"`
+	ConfigPath string    `json:"config_path"`
+	CreatedAt  time.Time `json:"created_at"`
+	HasGPG     bool      `json:"has_gpg,omitempty"`
+	HasSSH     bool      `json:"has_ssh,omitempty"`
 }
 
 // ExternalState tracks an external dependency

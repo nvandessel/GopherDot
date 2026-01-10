@@ -123,8 +123,12 @@ func syncSingleConfig(configName string, cfg *config.Config, dotfilesPath string
 
 	// Do the sync
 	err = stow.SyncSingle(dotfilesPath, configName, cfg, st, stow.StowOptions{
-		ProgressFunc: func(msg string) {
-			fmt.Printf("  %s\n", msg)
+		ProgressFunc: func(current, total int, msg string) {
+			if total > 0 && current > 0 {
+				fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+			} else {
+				fmt.Printf("  %s\n", msg)
+			}
 		},
 	})
 
@@ -183,8 +187,12 @@ func syncAllConfigs(cfg *config.Config, dotfilesPath string, st *state.State) {
 
 	// Do the sync
 	result, err := stow.SyncAll(dotfilesPath, cfg, st, ui.IsInteractive(), stow.StowOptions{
-		ProgressFunc: func(msg string) {
-			fmt.Printf("  %s\n", msg)
+		ProgressFunc: func(current, total int, msg string) {
+			if total > 0 && current > 0 {
+				fmt.Printf("  [%d/%d] %s\n", current, total, msg)
+			} else {
+				fmt.Printf("  %s\n", msg)
+			}
 		},
 	})
 

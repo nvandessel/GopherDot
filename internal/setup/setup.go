@@ -13,14 +13,14 @@ import (
 
 // InstallOptions configures the installation behavior
 type InstallOptions struct {
-	Auto         bool             // Non-interactive, use defaults
-	Minimal      bool             // Only core configs, skip optional
-	SkipDeps     bool             // Skip dependency installation
-	SkipExternal bool             // Skip external dependency cloning
-	SkipMachine  bool             // Skip machine-specific configuration
-	SkipStow     bool             // Skip stowing configs
-	Overwrite    bool             // Overwrite existing files
-	ProgressFunc func(msg string) // Called for progress updates
+	Auto         bool                                 // Non-interactive, use defaults
+	Minimal      bool                                 // Only core configs, skip optional
+	SkipDeps     bool                                 // Skip dependency installation
+	SkipExternal bool                                 // Skip external dependency cloning
+	SkipMachine  bool                                 // Skip machine-specific configuration
+	SkipStow     bool                                 // Skip stowing configs
+	Overwrite    bool                                 // Overwrite existing files
+	ProgressFunc func(current, total int, msg string) // Called for progress updates with item counts
 }
 
 // InstallResult tracks the result of the installation
@@ -116,8 +116,8 @@ func installDependencies(cfg *config.Config, p *platform.Platform, opts InstallO
 
 	installOpts := deps.InstallOptions{
 		OnlyMissing: true,
-		ProgressFunc: func(msg string) {
-			progress(opts, "  "+msg)
+		ProgressFunc: func(current, total int, msg string) {
+			progressWithCount(opts, current, total, "  "+msg)
 		},
 	}
 
@@ -187,8 +187,8 @@ func stowConfigs(cfg *config.Config, dotfilesPath string, opts InstallOptions, r
 	progress(opts, fmt.Sprintf("Stowing %d configs...", len(configsToStow)))
 
 	stowOpts := stow.StowOptions{
-		ProgressFunc: func(msg string) {
-			progress(opts, "  "+msg)
+		ProgressFunc: func(current, total int, msg string) {
+			progressWithCount(opts, current, total, "  "+msg)
 		},
 	}
 
@@ -221,8 +221,8 @@ func cloneExternal(cfg *config.Config, dotfilesPath string, p *platform.Platform
 
 	extOpts := deps.ExternalOptions{
 		RepoRoot: dotfilesPath,
-		ProgressFunc: func(msg string) {
-			progress(opts, "  "+msg)
+		ProgressFunc: func(current, total int, msg string) {
+			progressWithCount(opts, current, total, "  "+msg)
 		},
 	}
 
@@ -277,15 +277,15 @@ func configureMachine(cfg *config.Config, opts InstallOptions, result *InstallRe
 
 	promptOpts := machine.PromptOptions{
 		SkipPrompts: opts.Auto,
-		ProgressFunc: func(msg string) {
-			progress(opts, "  "+msg)
+		ProgressFunc: func(current, total int, msg string) {
+			progressWithCount(opts, current, total, "  "+msg)
 		},
 	}
 
 	renderOpts := machine.RenderOptions{
 		Overwrite: opts.Overwrite,
-		ProgressFunc: func(msg string) {
-			progress(opts, "  "+msg)
+		ProgressFunc: func(current, total int, msg string) {
+			progressWithCount(opts, current, total, "  "+msg)
 		},
 	}
 
@@ -316,7 +316,14 @@ func configureMachine(cfg *config.Config, opts InstallOptions, result *InstallRe
 // progress sends a progress message if the callback is set
 func progress(opts InstallOptions, msg string) {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(msg)
+		opts.ProgressFunc(0, 0, msg)
+	}
+}
+
+// progressWithCount sends a progress message with item counts
+func progressWithCount(opts InstallOptions, current, total int, msg string) {
+	if opts.ProgressFunc != nil {
+		opts.ProgressFunc(current, total, msg)
 	}
 }
 

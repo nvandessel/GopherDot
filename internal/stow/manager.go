@@ -26,14 +26,19 @@ type StowError struct {
 // StowOptions configures stow behavior
 type StowOptions struct {
 	DryRun       bool
-	Force        bool // Overwrite conflicts
-	ProgressFunc func(msg string)
+	Force        bool                                 // Overwrite conflicts
+	ProgressFunc func(current, total int, msg string) // Called for progress updates with item counts
 }
 
 // Stow symlinks a config directory using GNU stow
 func Stow(dotfilesPath string, configName string, opts StowOptions) error {
+	return StowWithCount(dotfilesPath, configName, 1, 1, opts)
+}
+
+// StowWithCount symlinks a config directory using GNU stow with progress tracking
+func StowWithCount(dotfilesPath string, configName string, current, total int, opts StowOptions) error {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Stowing %s...", configName))
+		opts.ProgressFunc(current, total, fmt.Sprintf("Stowing %s...", configName))
 	}
 
 	// Build stow command
@@ -59,7 +64,7 @@ func Stow(dotfilesPath string, configName string, opts StowOptions) error {
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("✓ Stowed %s", configName))
+		opts.ProgressFunc(current, total, fmt.Sprintf("✓ Stowed %s", configName))
 	}
 
 	return nil
@@ -67,8 +72,13 @@ func Stow(dotfilesPath string, configName string, opts StowOptions) error {
 
 // Unstow removes symlinks for a config
 func Unstow(dotfilesPath string, configName string, opts StowOptions) error {
+	return UnstowWithCount(dotfilesPath, configName, 1, 1, opts)
+}
+
+// UnstowWithCount removes symlinks for a config with progress tracking
+func UnstowWithCount(dotfilesPath string, configName string, current, total int, opts StowOptions) error {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Unstowing %s...", configName))
+		opts.ProgressFunc(current, total, fmt.Sprintf("Unstowing %s...", configName))
 	}
 
 	args := []string{"-v", "-D"} // Delete/unstow
@@ -89,7 +99,7 @@ func Unstow(dotfilesPath string, configName string, opts StowOptions) error {
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("✓ Unstowed %s", configName))
+		opts.ProgressFunc(current, total, fmt.Sprintf("✓ Unstowed %s", configName))
 	}
 
 	return nil
@@ -97,8 +107,13 @@ func Unstow(dotfilesPath string, configName string, opts StowOptions) error {
 
 // Restow refreshes symlinks for a config (unstow + stow)
 func Restow(dotfilesPath string, configName string, opts StowOptions) error {
+	return RestowWithCount(dotfilesPath, configName, 1, 1, opts)
+}
+
+// RestowWithCount refreshes symlinks for a config with progress tracking
+func RestowWithCount(dotfilesPath string, configName string, current, total int, opts StowOptions) error {
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("Restowing %s...", configName))
+		opts.ProgressFunc(current, total, fmt.Sprintf("Restowing %s...", configName))
 	}
 
 	args := []string{"-v", "-R"} // Restow
@@ -123,7 +138,7 @@ func Restow(dotfilesPath string, configName string, opts StowOptions) error {
 	}
 
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc(fmt.Sprintf("✓ Restowed %s", configName))
+		opts.ProgressFunc(current, total, fmt.Sprintf("✓ Restowed %s", configName))
 	}
 
 	return nil
@@ -132,20 +147,23 @@ func Restow(dotfilesPath string, configName string, opts StowOptions) error {
 // StowConfigs stows multiple configs
 func StowConfigs(dotfilesPath string, configs []config.ConfigItem, opts StowOptions) *StowResult {
 	result := &StowResult{}
+	total := len(configs)
 
-	for _, cfg := range configs {
+	for i, cfg := range configs {
+		current := i + 1
+
 		// Check if config directory exists
 		configPath := filepath.Join(dotfilesPath, cfg.Path)
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
 			result.Skipped = append(result.Skipped, cfg.Name)
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("⊘ Skipped %s (directory not found)", cfg.Name))
+				opts.ProgressFunc(current, total, fmt.Sprintf("⊘ Skipped %s (directory not found)", cfg.Name))
 			}
 			continue
 		}
 
 		// Stow it
-		err := Stow(dotfilesPath, cfg.Path, opts)
+		err := StowWithCount(dotfilesPath, cfg.Path, current, total, opts)
 		if err != nil {
 			result.Failed = append(result.Failed, StowError{
 				ConfigName: cfg.Name,
@@ -162,9 +180,11 @@ func StowConfigs(dotfilesPath string, configs []config.ConfigItem, opts StowOpti
 // UnstowConfigs unstows multiple configs
 func UnstowConfigs(dotfilesPath string, configs []config.ConfigItem, opts StowOptions) *StowResult {
 	result := &StowResult{}
+	total := len(configs)
 
-	for _, cfg := range configs {
-		err := Unstow(dotfilesPath, cfg.Path, opts)
+	for i, cfg := range configs {
+		current := i + 1
+		err := UnstowWithCount(dotfilesPath, cfg.Path, current, total, opts)
 		if err != nil {
 			result.Failed = append(result.Failed, StowError{
 				ConfigName: cfg.Name,
@@ -181,18 +201,20 @@ func UnstowConfigs(dotfilesPath string, configs []config.ConfigItem, opts StowOp
 // RestowConfigs restows multiple configs
 func RestowConfigs(dotfilesPath string, configs []config.ConfigItem, opts StowOptions) *StowResult {
 	result := &StowResult{}
+	total := len(configs)
 
-	for _, cfg := range configs {
+	for i, cfg := range configs {
+		current := i + 1
 		configPath := filepath.Join(dotfilesPath, cfg.Path)
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
 			result.Skipped = append(result.Skipped, cfg.Name)
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("⊘ Skipped %s (directory not found)", cfg.Name))
+				opts.ProgressFunc(current, total, fmt.Sprintf("⊘ Skipped %s (directory not found)", cfg.Name))
 			}
 			continue
 		}
 
-		err := Restow(dotfilesPath, cfg.Path, opts)
+		err := RestowWithCount(dotfilesPath, cfg.Path, current, total, opts)
 		if err != nil {
 			result.Failed = append(result.Failed, StowError{
 				ConfigName: cfg.Name,

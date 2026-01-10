@@ -379,7 +379,7 @@ func TestCloneExternalDryRun(t *testing.T) {
 	var progressMessages []string
 	opts := ExternalOptions{
 		DryRun: true,
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}
@@ -520,7 +520,7 @@ func TestRemoveExternalDryRun(t *testing.T) {
 	var progressMessages []string
 	opts := ExternalOptions{
 		DryRun: true,
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}

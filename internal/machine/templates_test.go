@@ -73,7 +73,7 @@ func TestRenderAndWrite(t *testing.T) {
 
 	var progressMessages []string
 	opts := RenderOptions{
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}
@@ -260,7 +260,7 @@ func TestRemoveMachineConfig(t *testing.T) {
 
 	var progressMessages []string
 	opts := RenderOptions{
-		ProgressFunc: func(msg string) {
+		ProgressFunc: func(current, total int, msg string) {
 			progressMessages = append(progressMessages, msg)
 		},
 	}

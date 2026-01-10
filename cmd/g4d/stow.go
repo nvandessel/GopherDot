@@ -53,8 +53,12 @@ var stowAddCmd = &cobra.Command{
 
 		// Stow it
 		opts := stow.StowOptions{
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 
@@ -99,8 +103,12 @@ var stowRemoveCmd = &cobra.Command{
 		dotfilesPath := filepath.Dir(configPath)
 
 		opts := stow.StowOptions{
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 
@@ -138,8 +146,12 @@ var stowRefreshCmd = &cobra.Command{
 
 		// Restow all configs
 		opts := stow.StowOptions{
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 

@@ -22,10 +22,10 @@ type InstallError struct {
 
 // InstallOptions configures the installation behavior
 type InstallOptions struct {
-	SkipPrompts  bool             // If true, install without asking
-	OnlyMissing  bool             // Only install missing deps
-	DryRun       bool             // Don't actually install, just report
-	ProgressFunc func(msg string) // Called for progress updates
+	SkipPrompts  bool                                 // If true, install without asking
+	OnlyMissing  bool                                 // Only install missing deps
+	DryRun       bool                                 // Don't actually install, just report
+	ProgressFunc func(current, total int, msg string) // Called for progress updates with item counts
 }
 
 // Install installs missing dependencies
@@ -55,25 +55,27 @@ func Install(cfg *config.Config, p *platform.Platform, opts InstallOptions) (*In
 	}
 
 	// Update package cache first
+	total := len(missing)
 	if opts.ProgressFunc != nil {
-		opts.ProgressFunc("Updating package cache...")
+		opts.ProgressFunc(0, total, "Updating package cache...")
 	}
 
 	if !opts.DryRun {
 		if err := pkgMgr.Update(); err != nil {
 			// Don't fail on update errors, just warn
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("Warning: failed to update package cache: %v", err))
+				opts.ProgressFunc(0, total, fmt.Sprintf("⚠ Warning: failed to update package cache: %v", err))
 			}
 		}
 	}
 
 	// Install each missing dependency
-	for _, depCheck := range missing {
+	for i, depCheck := range missing {
 		dep := depCheck.Item
+		current := i + 1
 
 		if opts.ProgressFunc != nil {
-			opts.ProgressFunc(fmt.Sprintf("Installing %s...", dep.Name))
+			opts.ProgressFunc(current, total, fmt.Sprintf("Installing %s...", dep.Name))
 		}
 
 		if opts.DryRun {
@@ -95,12 +97,12 @@ func Install(cfg *config.Config, p *platform.Platform, opts InstallOptions) (*In
 				Error: err,
 			})
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("Failed to install %s: %v", dep.Name, err))
+				opts.ProgressFunc(current, total, fmt.Sprintf("✗ Failed to install %s: %v", dep.Name, err))
 			}
 		} else {
 			result.Installed = append(result.Installed, dep)
 			if opts.ProgressFunc != nil {
-				opts.ProgressFunc(fmt.Sprintf("✓ Installed %s", dep.Name))
+				opts.ProgressFunc(current, total, fmt.Sprintf("✓ Installed %s", dep.Name))
 			}
 		}
 	}

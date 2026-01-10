@@ -137,8 +137,12 @@ var depsInstallCmd = &cobra.Command{
 		// Install with progress
 		opts := deps.InstallOptions{
 			OnlyMissing: true,
-			ProgressFunc: func(msg string) {
-				fmt.Println(msg)
+			ProgressFunc: func(current, total int, msg string) {
+				if total > 0 && current > 0 {
+					fmt.Printf("[%d/%d] %s\n", current, total, msg)
+				} else {
+					fmt.Println(msg)
+				}
 			},
 		}
 
